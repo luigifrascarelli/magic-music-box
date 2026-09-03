@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Magic Music Box — Music for Our Class</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Audiowide&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg-0:#0d0221;
+    --bg-1:#1a0b3d;
+    --bg-2:#240b4d;
+    --panel:#1c0e3e;
+    --panel-2:#22104a;
+    --border:rgba(255,255,255,0.10);
+    --text-0:#f4ecff;
+    --text-1:#c6b3ec;
+    --text-2:#8a76b8;
+    --coral:#ff2fd6;
+    --sun:#ff6ec7;
+    --sky:#33d9ff;
+
+    --m-silly:#ff2fd6;
+    --m-calm:#33d9ff;
+    --m-movement:#b967ff;
+    --m-learning:#ff6ec7;
+    --m-lullaby:#6f7bff;
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(ellipse 900px 500px at 15% -5%, rgba(255,47,214,0.18), transparent 60%),
+      radial-gradient(ellipse 700px 500px at 85% 5%, rgba(51,217,255,0.14), transparent 60%),
+      linear-gradient(180deg, var(--bg-0) 0%, var(--bg-1) 50%, var(--bg-2) 100%);
+    color:var(--text-0);
+    font-family:'Poppins', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    min-height:100vh;
+    position:relative;
+    overflow-x:hidden;
+  }
+
+  /* ---------- synthwave sun + grid backdrop ---------- */
+  #sun{
+    position:fixed;
+    top:6vh;
+    left:50%;
+    transform:translateX(-50%);
+    width:min(60vw, 520px);
+    height:min(60vw, 520px);
+    border-radius:50%;
+    background:linear-gradient(180deg, #ffde59 0%, #ff6ec7 45%, #b967ff 100%);
+    box-shadow:0 0 90px rgba(255,110,199,0.35);
+    z-index:0;
+    pointer-events:none;
+    opacity:0.5;
+    overflow:hidden;
+  }
+  #sun::before{
+    content:"";
+    position:absolute; inset:0;
+    background-image:repeating-linear-gradient(0deg, transparent 0 10px, var(--bg-0) 10px 16px);
+    opacity:0.85;
+    mix-blend-mode:multiply;
+  }
+  #grid-floor{
+    position:fixed;
+    left:0; right:0; bottom:0;
+    height:34vh;
+    min-height:220px;
+    z-index:0;
+    pointer-events:none;
+    background:
+      linear-gradient(180deg, transparent 0%, rgba(13,2,33,0.6) 60%, var(--bg-0) 100%),
+      repeating-linear-gradient(90deg, rgba(255,47,214,0.35) 0 1px, transparent 1px 60px),
+      repeating-linear-gradient(0deg, rgba(51,217,255,0.25) 0 1px, transparent 1px 34px);
+    -webkit-mask-image:linear-gradient(to top, black 0%, black 55%, transparent 100%);
+    mask-image:linear-gradient(to top, black 0%, black 55%, transparent 100%);
+    transform:perspective(220px) rotateX(35deg);
+    transform-origin:bottom;
+  }
+
+  .page{
+    position:relative;
+    z-index:1;
+    max-width:1200px;
+    margin:0 auto;
+    padding:36px 28px 90px;
+  }
+
+  /* ---------- header ---------- */
+  header{
+    display:flex;
+    align-items:flex-start;
+    gap:16px;
+    margin-bottom:24px;
+    flex-wrap:wrap;
+  }
+  header .logo{
+    width:54px;
+    height:54px;
+    flex-shrink:0;
+    margin-top:4px;
+  }
+  header .titles h1{
+    margin:0;
+    width:max-content;
+    max-width:100%;
+    font-family:'Audiowide', 'Poppins', sans-serif;
+    font-size:clamp(24px, 3.6vw, 38px);
+    font-weight:400;
+    letter-spacing:0.01em;
+    background:linear-gradient(90deg, #ff2fd6 0%, #ff6ec7 35%, #b967ff 65%, #33d9ff 100%);
+    -webkit-background-clip:text;
+    background-clip:text;
+    color:transparent;
+    text-shadow:0 0 30px rgba(255,47,214,0.35), 0 0 50px rgba(51,217,255,0.25);
+  }
+  header .titles .sub{
+    margin-top:6px;
+    color:var(--text-1);
+    font-size:15px;
+    font-weight:500;
+  }
+
+  .callout{
+    margin:0 0 26px;
+    padding:12px 18px;
+    border:1px solid rgba(51,217,255,0.35);
+    background:rgba(51,217,255,0.08);
+    border-radius:10px;
+    color:#a8ecff;
+    font-size:13.5px;
+    line-height:1.5;
+  }
+
+  /* ---------- category tabs ---------- */
+  .cat-tabs{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+    margin-bottom:20px;
+    border-bottom:1px solid var(--border);
+    padding-bottom:16px;
+  }
+  .cat-tab{
+    position:relative;
+    padding:10px 18px;
+    border-radius:10px;
+    border:1px solid var(--border);
+    background:var(--panel);
+    color:var(--text-1);
+    font-size:14px;
+    font-weight:700;
+    cursor:pointer;
+    transition:all 0.15s ease;
+  }
+  .cat-tab:hover{ color:var(--text-0); border-color:rgba(60,40,10,0.25); }
+  .cat-tab.active{
+    background:linear-gradient(135deg,#ff2fd6,#b967ff);
+    border-color:transparent;
+    color:#fff;
+    box-shadow:0 0 22px rgba(255,47,214,0.5);
+  }
+  .new-badge{
+    display:inline-block;
+    margin-left:7px;
+    padding:2px 8px;
+    border-radius:999px;
+    background:#33d9ff;
+    color:#0d0221;
+    font-size:10px;
+    font-weight:800;
+    letter-spacing:0.05em;
+    text-transform:uppercase;
+    vertical-align:middle;
+    box-shadow:0 0 10px rgba(51,217,255,0.7);
+  }
+
+  /* ---------- filter bar ---------- */
+  .filter-bar{
+    display:flex;
+    flex-direction:column;
+    margin-bottom:22px;
+    padding:14px 18px;
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:14px;
+  }
+  .dropdown-row{
+    display:flex;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:10px;
+  }
+  .dropdown{ position:relative; }
+  .dropdown-pill{
+    padding:9px 14px;
+    border-radius:10px;
+    border:1px solid var(--border);
+    background:var(--panel-2);
+    color:var(--text-1);
+    font-size:13.5px;
+    font-weight:700;
+    cursor:pointer;
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    white-space:nowrap;
+  }
+  .dropdown-pill:hover{ border-color:rgba(255,47,214,0.5); color:var(--text-0); }
+  .dropdown-pill .chevron{ opacity:0.7; display:inline-flex; }
+  .dropdown-pill.has-active{
+    border-color:#ff2fd6;
+    color:#fff;
+    background:linear-gradient(135deg,#ff2fd6,#b967ff);
+    box-shadow:0 0 14px rgba(255,47,214,0.4);
+  }
+  .dropdown-popover{
+    display:none;
+    position:absolute;
+    top:calc(100% + 8px);
+    left:0;
+    z-index:20;
+    min-width:220px;
+    max-width:290px;
+    padding:10px;
+    background:var(--panel-2);
+    border:1px solid var(--border);
+    border-radius:12px;
+    box-shadow:0 12px 40px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,47,214,0.08);
+  }
+  .dropdown-popover.open{ display:block; }
+  .dropdown-option{
+    display:flex;
+    align-items:center;
+    gap:9px;
+    padding:7px 8px;
+    border-radius:8px;
+    font-size:13px;
+    font-weight:600;
+    color:var(--text-1);
+    cursor:pointer;
+  }
+  .dropdown-option:hover{ background:rgba(255,47,214,0.1); color:var(--text-0); }
+  .dropdown-option input[type="checkbox"]{
+    width:14px; height:14px; accent-color:#ff2fd6; cursor:pointer; flex-shrink:0;
+  }
+  .dropdown-option .swatch{ width:9px; height:9px; border-radius:50%; flex-shrink:0; }
+
+  .view-toggle{ display:flex; gap:6px; margin-left:auto; }
+  .view-btn{
+    padding:8px 16px;
+    border-radius:8px;
+    border:1px solid var(--border);
+    background:var(--panel-2);
+    color:var(--text-1);
+    font-size:13px;
+    font-weight:700;
+    cursor:pointer;
+  }
+  .view-btn.active{ background:#ff2fd6; border-color:#ff2fd6; color:#fff; box-shadow:0 0 14px rgba(255,47,214,0.5); }
+
+  .active-filters{
+    display:flex; flex-wrap:wrap; align-items:center; gap:8px;
+    margin-top:14px; padding-top:14px; border-top:1px solid var(--border);
+  }
+  .active-filter-tag{
+    display:inline-flex; align-items:center; gap:6px;
+    padding:5px 6px 5px 12px; border-radius:999px;
+    background:rgba(255,47,214,0.1); border:1px solid var(--border);
+    color:var(--text-1); font-size:12px; font-weight:600;
+  }
+  .active-filter-tag button{
+    background:none; border:none; color:var(--text-2); cursor:pointer; font-size:15px; padding:2px 6px;
+  }
+  .clear-all-link{ color:var(--text-2); font-size:12.5px; font-weight:600; cursor:pointer; text-decoration:underline; margin-left:4px; }
+
+  .result-count{ color:var(--text-2); font-size:13px; margin-bottom:14px; }
+
+  /* ---------- card grid ---------- */
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill, minmax(300px, 1fr));
+    gap:18px;
+  }
+  .card{
+    position:relative;
+    background:linear-gradient(160deg, var(--panel-2), var(--panel));
+    border:1px solid var(--border);
+    border-radius:16px;
+    padding:18px 20px;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+    box-shadow:0 2px 10px rgba(0,0,0,0.25);
+    transition:transform 0.15s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  }
+  .card:hover{
+    transform:translateY(-3px);
+    border-color:var(--glow-color, #ff2fd6);
+    box-shadow:0 0 26px var(--glow-color-soft, rgba(255,47,214,0.35));
+  }
+  .card.match{
+    border-color:var(--glow-color, #ff2fd6);
+    box-shadow:0 0 0 1px var(--glow-color, #ff2fd6), 0 0 24px var(--glow-color-soft, rgba(255,47,214,0.55));
+    animation:pulse-glow 2.6s ease-in-out infinite;
+  }
+  @keyframes pulse-glow{
+    0%,100%{ box-shadow:0 0 0 1px var(--glow-color), 0 0 16px var(--glow-color); }
+    50%{ box-shadow:0 0 0 1px var(--glow-color), 0 0 30px var(--glow-color); }
+  }
+  .card-duration{
+    font-size:12.5px; font-weight:700; color:var(--text-2); letter-spacing:0.02em;
+  }
+  .card-name{
+    color:var(--text-0); font-size:18px; font-weight:800; line-height:1.25;
+    display:inline-flex; align-items:center; gap:8px;
+  }
+  .card-name .play-ic{
+    display:inline-flex; align-items:center; justify-content:center;
+    width:22px; height:22px; border-radius:50%; background:linear-gradient(135deg,#ff6ec7,#b967ff); color:#fff; font-size:10px; flex-shrink:0;
+    box-shadow:0 0 10px rgba(255,110,199,0.5);
+  }
+  .card-meta{ color:var(--text-1); font-size:13px; line-height:1.5; }
+  .card-meta b{ color:var(--text-0); font-weight:600; }
+  .card-notes{ color:var(--text-2); font-size:13px; line-height:1.5; font-style:italic; }
+  .card-chips{ display:flex; flex-wrap:wrap; gap:6px; margin-top:2px; }
+  .pill{ padding:4px 10px; border-radius:999px; font-size:11.5px; font-weight:700; white-space:nowrap; }
+  .pill-occasion{ background:rgba(51,217,255,0.12); color:#8be8ff; border:1px solid rgba(51,217,255,0.35); }
+
+  .player-row{
+    margin-top:6px;
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  .player-row audio{
+    flex:1;
+    height:34px;
+    border-radius:10px;
+  }
+  .player-row audio::-webkit-media-controls-panel{
+    background-color:var(--panel-2);
+  }
+  .download-link{
+    flex-shrink:0;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    width:34px;
+    height:34px;
+    border-radius:10px;
+    background:linear-gradient(135deg,#ff2fd6,#b967ff,#33d9ff);
+    color:#fff;
+    text-decoration:none;
+    font-size:14px;
+    box-shadow:0 4px 14px rgba(255,47,214,0.35);
+  }
+  .download-link:hover{ transform:translateY(-1px); box-shadow:0 6px 18px rgba(255,47,214,0.5); }
+
+  .empty-state{ text-align:center; padding:60px 20px; color:var(--text-2); font-size:15px; }
+
+  /* ---------- list view ---------- */
+  .table-wrap{ width:100%; overflow-x:auto; border:1px solid var(--border); border-radius:14px; background:var(--panel); }
+  table.songs-table{ width:100%; border-collapse:collapse; font-size:13.5px; }
+  table.songs-table th{
+    text-align:left; padding:12px 14px; color:var(--text-2); font-weight:700; font-size:12px;
+    text-transform:uppercase; letter-spacing:0.04em; cursor:pointer; border-bottom:1px solid var(--border);
+  }
+  table.songs-table th:hover{ color:var(--text-0); }
+  table.songs-table td{ padding:12px 14px; border-bottom:1px solid var(--border); color:var(--text-1); vertical-align:top; }
+  table.songs-table tr:hover td{ background:rgba(255,47,214,0.05); }
+  table.songs-table tr.match td:first-child{ box-shadow:inset 3px 0 0 var(--glow-color,#ff2fd6); }
+  table.songs-table td a{ color:var(--coral); text-decoration:none; font-weight:700; }
+  .table-chip-cell{ display:flex; flex-wrap:wrap; gap:4px; }
+
+  @media (max-width:640px){
+    .page{ padding:24px 16px 70px; }
+  }
+</style>
+</head>
+<body>
+
+<div id="sun"></div>
+<div id="grid-floor"></div>
+
+<div class="page">
+
+  <header>
+    <svg class="logo" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="logoGrad" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#ff2fd6"/>
+          <stop offset="100%" stop-color="#33d9ff"/>
+        </linearGradient>
+      </defs>
+      <circle cx="24" cy="24" r="24" fill="url(#logoGrad)"/>
+      <path d="M32 12v16.6c-1-.4-2.1-.6-3.3-.6-3 0-5.4 1.9-5.4 4.3s2.4 4.3 5.4 4.3 5.3-1.9 5.3-4.3V17.8l-9-2.4v14.2c-1-.4-2.1-.6-3.3-.6-3 0-5.4 1.9-5.4 4.3s2.4 4.3 5.4 4.3 5.3-1.9 5.3-4.3V16l9-2.4V12h-4z" fill="#fff"/>
+    </svg>
+    <div class="titles">
+      <h1>Magic Music Box</h1>
+      <div class="sub" style="color:#c6b3ec;">Songs from our classroom — click a title to listen, or find something for the car ride home.</div>
+    </div>
+  </header>
+
+  <div class="callout">
+    Free to listen and share. New songs get added as we learn them — check back throughout the year! Right-click any "Listen" button to save the file.
+  </div>
+
+  <div class="cat-tabs" id="catTabs"></div>
+
+  <div class="filter-bar">
+    <div class="dropdown-row">
+      <div class="dropdown" data-key="mood">
+        <button class="dropdown-pill" id="moodPillBtn" type="button">Mood</button>
+        <div class="dropdown-popover" id="moodPopover"></div>
+      </div>
+      <div class="dropdown" data-key="occasion">
+        <button class="dropdown-pill" id="occPillBtn" type="button">Find songs for…</button>
+        <div class="dropdown-popover" id="occPopover"></div>
+      </div>
+      <div class="view-toggle">
+        <button class="view-btn active" data-view="grid" id="gridBtn">Card grid</button>
+        <button class="view-btn" data-view="table" id="tableBtn">List</button>
+      </div>
+    </div>
+    <div class="active-filters" id="activeFilters" style="display:none;"></div>
+  </div>
+
+  <div class="result-count" id="resultCount"></div>
+
+  <div id="gridView" class="grid"></div>
+  <div id="tableView" class="table-wrap" style="display:none;">
+    <table class="songs-table" id="songsTable">
+      <thead>
+        <tr>
+          <th data-sort="sortDur" class="sorted asc">Length</th>
+          <th data-sort="name">Song</th>
+          <th data-sort="performer">Created by</th>
+          <th data-sort="mood">Mood</th>
+          <th data-sort="occasion">Best for</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+  </div>
+
+</div>
+
+<script src="data.js"></script>
+<script>
+const ICON_NOTE = `<svg viewBox="0 0 24 24" width="12" height="12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M9 18V5l11-2v12" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="6.5" cy="18" r="2.5" fill="#fff"/><circle cx="17.5" cy="16" r="2.5" fill="#fff"/></svg>`;
+
+const ICON_DOWNLOAD = `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 3v12m0 0l-4.5-4.5M12 15l4.5-4.5" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+
+const ICON_CHEVRON = `<svg class="chevron" viewBox="0 0 24 24" width="10" height="10" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+
+const ICON_CLOSE = `<svg viewBox="0 0 24 24" width="11" height="11" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>`;
+
+const OCCASIONS = [...new Set(SONGS.map(s => s.occasion))];
+const MOODS = Object.keys(MOOD_COLORS);
+
+const state = {
+  activeCategory: "all",
+  activeMoods: new Set(),
+  activeOccasions: new Set(),
+  view: "grid"
+};
+
+function renderCatTabs(){
+  const wrap = document.getElementById('catTabs');
+  wrap.innerHTML = "";
+  CATEGORIES.forEach(cat => {
+    const btn = document.createElement('button');
+    btn.className = "cat-tab" + (state.activeCategory === cat.key ? " active" : "");
+    btn.innerHTML = cat.label + (cat.isNew ? '<span class="new-badge">New</span>' : "");
+    btn.addEventListener('click', () => { state.activeCategory = cat.key; renderAll(); });
+    wrap.appendChild(btn);
+  });
+}
+
+function buildDropdown(pillId, popId, label, options, activeSet, colorMap){
+  const pillBtn = document.getElementById(pillId);
+  const pop = document.getElementById(popId);
+  pillBtn.innerHTML = (activeSet.size ? `${label} (${activeSet.size})` : label) + ' ' + ICON_CHEVRON;
+  pillBtn.classList.toggle('has-active', activeSet.size > 0);
+  pop.innerHTML = "";
+  options.forEach(opt => {
+    const row = document.createElement('label');
+    row.className = "dropdown-option";
+    const swatch = colorMap ? `<span class="swatch" style="background:${colorMap[opt]}"></span>` : "";
+    row.innerHTML = `<input type="checkbox" ${activeSet.has(opt) ? "checked" : ""}> ${swatch} ${opt}`;
+    row.querySelector('input').addEventListener('change', (e) => {
+      if (e.target.checked) activeSet.add(opt); else activeSet.delete(opt);
+      renderAll();
+    });
+    pop.appendChild(row);
+  });
+  pillBtn.onclick = (e) => {
+    e.stopPropagation();
+    document.querySelectorAll('.dropdown-popover').forEach(p => { if (p !== pop) p.classList.remove('open'); });
+    pop.classList.toggle('open');
+  };
+}
+
+document.addEventListener('click', () => document.querySelectorAll('.dropdown-popover').forEach(p => p.classList.remove('open')));
+
+function renderActiveFilters(){
+  const wrap = document.getElementById('activeFilters');
+  const tags = [];
+  state.activeMoods.forEach(v => tags.push({group:'mood', value:v}));
+  state.activeOccasions.forEach(v => tags.push({group:'occasion', value:v}));
+  if (!tags.length){ wrap.style.display = "none"; wrap.innerHTML = ""; return; }
+  wrap.style.display = "flex";
+  wrap.innerHTML = "";
+  tags.forEach(t => {
+    const tag = document.createElement('span');
+    tag.className = "active-filter-tag";
+    tag.innerHTML = `${t.value} <button aria-label="Remove filter: ${t.value}">${ICON_CLOSE}</button>`;
+    tag.querySelector('button').addEventListener('click', () => {
+      if (t.group === 'mood') state.activeMoods.delete(t.value);
+      if (t.group === 'occasion') state.activeOccasions.delete(t.value);
+      renderAll();
+    });
+    wrap.appendChild(tag);
+  });
+  const clear = document.createElement('span');
+  clear.className = "clear-all-link";
+  clear.textContent = "Clear all";
+  clear.addEventListener('click', () => {
+    state.activeMoods.clear(); state.activeOccasions.clear();
+    renderAll();
+  });
+  wrap.appendChild(clear);
+}
+
+function getFiltered(){
+  let list = state.activeCategory === "all" ? SONGS : SONGS.filter(s => s.category.includes(state.activeCategory));
+  if (state.activeMoods.size) list = list.filter(s => s.mood.some(m => state.activeMoods.has(m)));
+  if (state.activeOccasions.size) list = list.filter(s => state.activeOccasions.has(s.occasion));
+  return list;
+}
+
+function isMatch(song){
+  // "Find songs for..." glow: highlight when an occasion filter is active and matches
+  return state.activeOccasions.size > 0 && state.activeOccasions.has(song.occasion);
+}
+
+function renderGrid(list){
+  const grid = document.getElementById('gridView');
+  if (!list.length){
+    grid.innerHTML = '<div class="empty-state">No songs match these filters yet. Try clearing a filter.</div>';
+    return;
+  }
+  grid.innerHTML = "";
+  list.forEach(song => {
+    const card = document.createElement('div');
+    const match = isMatch(song);
+    card.className = "card" + (match ? " match" : "");
+    if (match) card.style.setProperty('--glow-color', MOOD_COLORS[song.mood[0]]);
+    const moodChips = song.mood.map(m => `<span class="pill" style="background:${MOOD_COLORS[m]}22; color:${MOOD_COLORS[m]}; border:1px solid ${MOOD_COLORS[m]}55;">${m}</span>`).join("");
+    card.innerHTML = `
+      <div class="card-duration">${song.dur}</div>
+      <div class="card-name"><span class="play-ic">${ICON_NOTE}</span>${song.name}</div>
+      <div class="card-meta"><b>Created by:</b> ${song.performer}</div>
+      <div class="card-notes">${song.notes}</div>
+      <div class="card-chips">${moodChips}<span class="pill pill-occasion">${song.occasion}</span></div>
+      <div class="player-row">
+        <audio controls preload="none">
+          <source src="${song.url}" type="audio/mpeg">
+          Your browser can't play audio here — use the download link instead.
+        </audio>
+        <a class="download-link" href="${song.url}" download title="Download ${song.name}" aria-label="Download ${song.name}">${ICON_DOWNLOAD}</a>
+      </div>
+    `;
+    grid.appendChild(card);
+  });
+}
+
+function renderTable(list){
+  const body = document.getElementById('tableBody');
+  if (!list.length){
+    body.innerHTML = '<tr><td colspan="5" class="empty-state">No songs match these filters yet.</td></tr>';
+    return;
+  }
+  body.innerHTML = "";
+  list.forEach(song => {
+    const tr = document.createElement('tr');
+    if (isMatch(song)){ tr.className = "match"; tr.style.setProperty('--glow-color', MOOD_COLORS[song.mood[0]]); }
+    const moodHtml = song.mood.map(m => `<span class="pill" style="background:${MOOD_COLORS[m]}22; color:${MOOD_COLORS[m]}; border:1px solid ${MOOD_COLORS[m]}55;">${m}</span>`).join("");
+    tr.innerHTML = `
+      <td>${song.dur}</td>
+      <td>${song.name}<br><audio controls preload="none" style="width:190px; height:30px; margin-top:4px;"><source src="${song.url}" type="audio/mpeg"></audio> <a class="download-link" style="width:26px;height:26px;vertical-align:middle;" href="${song.url}" download title="Download ${song.name}" aria-label="Download ${song.name}">${ICON_DOWNLOAD}</a></td>
+      <td>${song.performer}</td>
+      <td><div class="table-chip-cell">${moodHtml}</div></td>
+      <td>${song.occasion}</td>
+    `;
+    body.appendChild(tr);
+  });
+}
+
+function renderAll(){
+  renderCatTabs();
+  buildDropdown('moodPillBtn', 'moodPopover', 'Mood', MOODS, state.activeMoods, MOOD_COLORS);
+  buildDropdown('occPillBtn', 'occPopover', 'Find songs for…', OCCASIONS, state.activeOccasions, null);
+  renderActiveFilters();
+  const list = getFiltered();
+  document.getElementById('resultCount').textContent = `${list.length} song${list.length === 1 ? "" : "s"}`;
+  if (state.view === "grid") renderGrid(list); else renderTable(list);
+}
+
+document.getElementById('gridBtn').addEventListener('click', () => {
+  state.view = "grid";
+  document.getElementById('gridBtn').classList.add('active');
+  document.getElementById('tableBtn').classList.remove('active');
+  document.getElementById('gridView').style.display = "grid";
+  document.getElementById('tableView').style.display = "none";
+  renderAll();
+});
+document.getElementById('tableBtn').addEventListener('click', () => {
+  state.view = "table";
+  document.getElementById('tableBtn').classList.add('active');
+  document.getElementById('gridBtn').classList.remove('active');
+  document.getElementById('gridView').style.display = "none";
+  document.getElementById('tableView').style.display = "block";
+  renderAll();
+});
+
+renderAll();
+</script>
+
+</body>
+</html>
