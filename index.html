@@ -42,29 +42,20 @@
     overflow-x:hidden;
   }
 
-  /* ---------- synthwave sun + grid backdrop ---------- */
-  #sun{
+  /* ---------- synthwave cassette + grid backdrop ---------- */
+  #cassette-bg{
     position:fixed;
-    top:6vh;
+    top:4vh;
     left:50%;
     transform:translateX(-50%);
-    width:min(60vw, 520px);
-    height:min(60vw, 520px);
-    border-radius:50%;
-    background:linear-gradient(180deg, #ffde59 0%, #ff6ec7 45%, #b967ff 100%);
-    box-shadow:0 0 90px rgba(255,110,199,0.35);
+    width:min(72vw, 640px);
+    height:auto;
     z-index:0;
     pointer-events:none;
-    opacity:0.5;
-    overflow:hidden;
+    opacity:0.22;
+    filter:drop-shadow(0 0 40px rgba(255,47,214,0.45)) drop-shadow(0 0 70px rgba(51,217,255,0.25));
   }
-  #sun::before{
-    content:"";
-    position:absolute; inset:0;
-    background-image:repeating-linear-gradient(0deg, transparent 0 10px, var(--bg-0) 10px 16px);
-    opacity:0.85;
-    mix-blend-mode:multiply;
-  }
+  #cassette-bg svg{ display:block; width:100%; height:auto; }
   #grid-floor{
     position:fixed;
     left:0; right:0; bottom:0;
@@ -99,10 +90,10 @@
     flex-wrap:wrap;
   }
   header .logo{
-    width:54px;
-    height:54px;
+    width:66px;
+    height:46px;
     flex-shrink:0;
-    margin-top:4px;
+    margin-top:6px;
   }
   header .titles h1{
     margin:0;
@@ -384,25 +375,80 @@
 </head>
 <body>
 
-<div id="sun"></div>
+<div id="cassette-bg">
+  <svg viewBox="0 0 640 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="bgCassetteGrad" x1="0" y1="0" x2="640" y2="400" gradientUnits="userSpaceOnUse">
+        <stop offset="0%" stop-color="#ff2fd6"/>
+        <stop offset="45%" stop-color="#b967ff"/>
+        <stop offset="100%" stop-color="#33d9ff"/>
+      </linearGradient>
+      <linearGradient id="bgCassetteFill" x1="0" y1="0" x2="0" y2="400" gradientUnits="userSpaceOnUse">
+        <stop offset="0%" stop-color="#2a1360"/>
+        <stop offset="100%" stop-color="#170a38"/>
+      </linearGradient>
+    </defs>
+    <!-- body -->
+    <rect x="10" y="10" width="620" height="380" rx="28" fill="url(#bgCassetteFill)" stroke="url(#bgCassetteGrad)" stroke-width="6"/>
+    <!-- screw holes -->
+    <circle cx="46" cy="46" r="9" fill="none" stroke="url(#bgCassetteGrad)" stroke-width="4"/>
+    <circle cx="594" cy="46" r="9" fill="none" stroke="url(#bgCassetteGrad)" stroke-width="4"/>
+    <circle cx="46" cy="354" r="9" fill="none" stroke="url(#bgCassetteGrad)" stroke-width="4"/>
+    <circle cx="594" cy="354" r="9" fill="none" stroke="url(#bgCassetteGrad)" stroke-width="4"/>
+    <!-- label window -->
+    <rect x="90" y="46" width="460" height="90" rx="14" fill="none" stroke="url(#bgCassetteGrad)" stroke-width="5"/>
+    <line x1="120" y1="76" x2="380" y2="76" stroke="url(#bgCassetteGrad)" stroke-width="5" stroke-linecap="round"/>
+    <line x1="120" y1="102" x2="320" y2="102" stroke="url(#bgCassetteGrad)" stroke-width="5" stroke-linecap="round"/>
+    <!-- reel window panel -->
+    <rect x="90" y="160" width="460" height="140" rx="14" fill="none" stroke="url(#bgCassetteGrad)" stroke-width="5"/>
+    <!-- left reel -->
+    <circle cx="210" cy="230" r="56" fill="none" stroke="url(#bgCassetteGrad)" stroke-width="5"/>
+    <circle cx="210" cy="230" r="16" fill="none" stroke="url(#bgCassetteGrad)" stroke-width="5"/>
+    <line x1="210" y1="188" x2="210" y2="204" stroke="url(#bgCassetteGrad)" stroke-width="5" stroke-linecap="round"/>
+    <line x1="210" y1="256" x2="210" y2="272" stroke="url(#bgCassetteGrad)" stroke-width="5" stroke-linecap="round"/>
+    <line x1="168" y1="230" x2="184" y2="230" stroke="url(#bgCassetteGrad)" stroke-width="5" stroke-linecap="round"/>
+    <line x1="236" y1="230" x2="252" y2="230" stroke="url(#bgCassetteGrad)" stroke-width="5" stroke-linecap="round"/>
+    <!-- right reel -->
+    <circle cx="430" cy="230" r="56" fill="none" stroke="url(#bgCassetteGrad)" stroke-width="5"/>
+    <circle cx="430" cy="230" r="16" fill="none" stroke="url(#bgCassetteGrad)" stroke-width="5"/>
+    <line x1="430" y1="188" x2="430" y2="204" stroke="url(#bgCassetteGrad)" stroke-width="5" stroke-linecap="round"/>
+    <line x1="430" y1="256" x2="430" y2="272" stroke="url(#bgCassetteGrad)" stroke-width="5" stroke-linecap="round"/>
+    <line x1="388" y1="230" x2="404" y2="230" stroke="url(#bgCassetteGrad)" stroke-width="5" stroke-linecap="round"/>
+    <line x1="456" y1="230" x2="472" y2="230" stroke="url(#bgCassetteGrad)" stroke-width="5" stroke-linecap="round"/>
+    <!-- center tape bridge -->
+    <rect x="290" y="222" width="60" height="16" rx="4" fill="none" stroke="url(#bgCassetteGrad)" stroke-width="5"/>
+    <!-- bottom notches -->
+    <path d="M120 340 q40 -30 80 0" stroke="url(#bgCassetteGrad)" stroke-width="5" fill="none" stroke-linecap="round"/>
+    <path d="M440 340 q40 -30 80 0" stroke="url(#bgCassetteGrad)" stroke-width="5" fill="none" stroke-linecap="round"/>
+  </svg>
+</div>
 <div id="grid-floor"></div>
 
 <div class="page">
 
   <header>
-    <svg class="logo" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg class="logo" viewBox="0 0 64 44" fill="none" xmlns="http://www.w3.org/2000/svg">
       <defs>
-        <linearGradient id="logoGrad" x1="0" y1="0" x2="1" y2="1">
+        <linearGradient id="logoGrad" x1="0" y1="0" x2="64" y2="44" gradientUnits="userSpaceOnUse">
           <stop offset="0%" stop-color="#ff2fd6"/>
           <stop offset="100%" stop-color="#33d9ff"/>
         </linearGradient>
       </defs>
-      <circle cx="24" cy="24" r="24" fill="url(#logoGrad)"/>
-      <path d="M32 12v16.6c-1-.4-2.1-.6-3.3-.6-3 0-5.4 1.9-5.4 4.3s2.4 4.3 5.4 4.3 5.3-1.9 5.3-4.3V17.8l-9-2.4v14.2c-1-.4-2.1-.6-3.3-.6-3 0-5.4 1.9-5.4 4.3s2.4 4.3 5.4 4.3 5.3-1.9 5.3-4.3V16l9-2.4V12h-4z" fill="#fff"/>
+      <rect x="1.5" y="1.5" width="61" height="41" rx="7" fill="#1c0e3e" stroke="url(#logoGrad)" stroke-width="2.5"/>
+      <circle cx="9" cy="7.5" r="1.6" fill="url(#logoGrad)"/>
+      <circle cx="55" cy="7.5" r="1.6" fill="url(#logoGrad)"/>
+      <circle cx="9" cy="36.5" r="1.6" fill="url(#logoGrad)"/>
+      <circle cx="55" cy="36.5" r="1.6" fill="url(#logoGrad)"/>
+      <rect x="10" y="6" width="44" height="12" rx="3" fill="none" stroke="url(#logoGrad)" stroke-width="2"/>
+      <circle cx="18" cy="30" r="7.5" fill="none" stroke="url(#logoGrad)" stroke-width="2.2"/>
+      <circle cx="18" cy="30" r="2.2" fill="url(#logoGrad)"/>
+      <circle cx="46" cy="30" r="7.5" fill="none" stroke="url(#logoGrad)" stroke-width="2.2"/>
+      <circle cx="46" cy="30" r="2.2" fill="url(#logoGrad)"/>
+      <rect x="28" y="27" width="8" height="6" rx="1.5" fill="url(#logoGrad)"/>
     </svg>
     <div class="titles">
       <h1>Magic Music Box</h1>
-      <div class="sub" style="color:#c6b3ec;">Songs from our classroom — click a title to listen, or find something for the car ride home.</div>
+      <div class="sub" style="color:#c6b3ec;">Songs for Pre-K Orange - the best class ever!</div>
     </div>
   </header>
 
