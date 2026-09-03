@@ -26,6 +26,42 @@
     --m-movement:#b967ff;
     --m-learning:#ff6ec7;
     --m-lullaby:#6f7bff;
+
+    --callout-bg:rgba(51,217,255,0.08);
+    --callout-border:rgba(51,217,255,0.35);
+    --callout-text:#a8ecff;
+    --sub-text:#c6b3ec;
+    --occasion-bg:rgba(51,217,255,0.12);
+    --occasion-text:#8be8ff;
+    --occasion-border:rgba(51,217,255,0.35);
+    --cassette-fill-1:#2a1360;
+    --cassette-fill-2:#170a38;
+    --cassette-opacity:0.22;
+    --logo-fill:#1c0e3e;
+  }
+
+  [data-theme="light"]{
+    --bg-0:#fdf5ff;
+    --bg-1:#f7ecff;
+    --bg-2:#efe0ff;
+    --panel:#ffffff;
+    --panel-2:#faf3ff;
+    --border:rgba(90,40,140,0.14);
+    --text-0:#241a3d;
+    --text-1:#5c4a80;
+    --text-2:#8c7aae;
+
+    --callout-bg:rgba(255,47,214,0.08);
+    --callout-border:rgba(255,47,214,0.35);
+    --callout-text:#c0189e;
+    --sub-text:#7a4fb0;
+    --occasion-bg:rgba(31,109,146,0.10);
+    --occasion-text:#1f6d92;
+    --occasion-border:rgba(31,109,146,0.35);
+    --cassette-fill-1:#f6ecff;
+    --cassette-fill-2:#ffffff;
+    --cassette-opacity:0.28;
+    --logo-fill:#ffffff;
   }
 
   *{box-sizing:border-box;}
@@ -40,6 +76,7 @@
     min-height:100vh;
     position:relative;
     overflow-x:hidden;
+    transition:background 0.25s ease, color 0.25s ease;
   }
 
   /* ---------- synthwave cassette + grid backdrop ---------- */
@@ -52,7 +89,7 @@
     height:auto;
     z-index:0;
     pointer-events:none;
-    opacity:0.22;
+    opacity:var(--cassette-opacity);
     filter:drop-shadow(0 0 40px rgba(255,47,214,0.45)) drop-shadow(0 0 70px rgba(51,217,255,0.25));
   }
   #cassette-bg svg{ display:block; width:100%; height:auto; }
@@ -95,6 +132,7 @@
     flex-shrink:0;
     margin-top:6px;
   }
+  header .titles{ flex:1; min-width:0; }
   header .titles h1{
     margin:0;
     width:max-content;
@@ -111,18 +149,34 @@
   }
   header .titles .sub{
     margin-top:6px;
-    color:var(--text-1);
+    color:var(--sub-text);
     font-size:15px;
     font-weight:500;
   }
+  .theme-toggle{
+    flex-shrink:0;
+    width:44px;
+    height:44px;
+    border-radius:50%;
+    border:1px solid var(--border);
+    background:var(--panel);
+    color:var(--text-1);
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+    margin-top:2px;
+    transition:border-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+  }
+  .theme-toggle:hover{ border-color:#ff2fd6; color:var(--text-0); box-shadow:0 0 14px rgba(255,47,214,0.35); }
 
   .callout{
     margin:0 0 26px;
     padding:12px 18px;
-    border:1px solid rgba(51,217,255,0.35);
-    background:rgba(51,217,255,0.08);
+    border:1px solid var(--callout-border);
+    background:var(--callout-bg);
     border-radius:10px;
-    color:#a8ecff;
+    color:var(--callout-text);
     font-size:13.5px;
     line-height:1.5;
   }
@@ -170,106 +224,41 @@
     box-shadow:0 0 10px rgba(51,217,255,0.7);
   }
 
-  /* ---------- filter bar ---------- */
-  .filter-bar{
-    display:flex;
-    flex-direction:column;
-    margin-bottom:22px;
-    padding:14px 18px;
-    background:var(--panel);
-    border:1px solid var(--border);
-    border-radius:14px;
-  }
-  .dropdown-row{
+  /* ---------- controls row + view pill ---------- */
+  .controls-row{
     display:flex;
     align-items:center;
+    justify-content:space-between;
     flex-wrap:wrap;
     gap:10px;
+    margin-bottom:18px;
   }
-  .dropdown{ position:relative; }
-  .dropdown-pill{
-    padding:9px 14px;
-    border-radius:10px;
+  .result-count{ color:var(--text-2); font-size:13px; }
+
+  .view-pill{
+    display:inline-flex;
+    padding:4px;
+    border-radius:999px;
+    background:var(--panel);
     border:1px solid var(--border);
-    background:var(--panel-2);
+    gap:2px;
+  }
+  .view-pill-btn{
+    padding:7px 16px;
+    border-radius:999px;
+    border:none;
+    background:transparent;
     color:var(--text-1);
-    font-size:13.5px;
+    font-size:13px;
     font-weight:700;
     cursor:pointer;
-    display:inline-flex;
-    align-items:center;
-    gap:6px;
-    white-space:nowrap;
+    transition:background 0.15s ease, color 0.15s ease;
   }
-  .dropdown-pill:hover{ border-color:rgba(255,47,214,0.5); color:var(--text-0); }
-  .dropdown-pill .chevron{ opacity:0.7; display:inline-flex; }
-  .dropdown-pill.has-active{
-    border-color:#ff2fd6;
+  .view-pill-btn.active{
+    background:linear-gradient(135deg,#ff2fd6,#b967ff,#33d9ff);
     color:#fff;
-    background:linear-gradient(135deg,#ff2fd6,#b967ff);
     box-shadow:0 0 14px rgba(255,47,214,0.4);
   }
-  .dropdown-popover{
-    display:none;
-    position:absolute;
-    top:calc(100% + 8px);
-    left:0;
-    z-index:20;
-    min-width:220px;
-    max-width:290px;
-    padding:10px;
-    background:var(--panel-2);
-    border:1px solid var(--border);
-    border-radius:12px;
-    box-shadow:0 12px 40px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,47,214,0.08);
-  }
-  .dropdown-popover.open{ display:block; }
-  .dropdown-option{
-    display:flex;
-    align-items:center;
-    gap:9px;
-    padding:7px 8px;
-    border-radius:8px;
-    font-size:13px;
-    font-weight:600;
-    color:var(--text-1);
-    cursor:pointer;
-  }
-  .dropdown-option:hover{ background:rgba(255,47,214,0.1); color:var(--text-0); }
-  .dropdown-option input[type="checkbox"]{
-    width:14px; height:14px; accent-color:#ff2fd6; cursor:pointer; flex-shrink:0;
-  }
-  .dropdown-option .swatch{ width:9px; height:9px; border-radius:50%; flex-shrink:0; }
-
-  .view-toggle{ display:flex; gap:6px; margin-left:auto; }
-  .view-btn{
-    padding:8px 16px;
-    border-radius:8px;
-    border:1px solid var(--border);
-    background:var(--panel-2);
-    color:var(--text-1);
-    font-size:13px;
-    font-weight:700;
-    cursor:pointer;
-  }
-  .view-btn.active{ background:#ff2fd6; border-color:#ff2fd6; color:#fff; box-shadow:0 0 14px rgba(255,47,214,0.5); }
-
-  .active-filters{
-    display:flex; flex-wrap:wrap; align-items:center; gap:8px;
-    margin-top:14px; padding-top:14px; border-top:1px solid var(--border);
-  }
-  .active-filter-tag{
-    display:inline-flex; align-items:center; gap:6px;
-    padding:5px 6px 5px 12px; border-radius:999px;
-    background:rgba(255,47,214,0.1); border:1px solid var(--border);
-    color:var(--text-1); font-size:12px; font-weight:600;
-  }
-  .active-filter-tag button{
-    background:none; border:none; color:var(--text-2); cursor:pointer; font-size:15px; padding:2px 6px;
-  }
-  .clear-all-link{ color:var(--text-2); font-size:12.5px; font-weight:600; cursor:pointer; text-decoration:underline; margin-left:4px; }
-
-  .result-count{ color:var(--text-2); font-size:13px; margin-bottom:14px; }
 
   /* ---------- card grid ---------- */
   .grid{
@@ -291,17 +280,8 @@
   }
   .card:hover{
     transform:translateY(-3px);
-    border-color:var(--glow-color, #ff2fd6);
-    box-shadow:0 0 26px var(--glow-color-soft, rgba(255,47,214,0.35));
-  }
-  .card.match{
-    border-color:var(--glow-color, #ff2fd6);
-    box-shadow:0 0 0 1px var(--glow-color, #ff2fd6), 0 0 24px var(--glow-color-soft, rgba(255,47,214,0.55));
-    animation:pulse-glow 2.6s ease-in-out infinite;
-  }
-  @keyframes pulse-glow{
-    0%,100%{ box-shadow:0 0 0 1px var(--glow-color), 0 0 16px var(--glow-color); }
-    50%{ box-shadow:0 0 0 1px var(--glow-color), 0 0 30px var(--glow-color); }
+    border-color:var(--coral);
+    box-shadow:0 0 26px rgba(255,47,214,0.35);
   }
   .card-duration{
     font-size:12.5px; font-weight:700; color:var(--text-2); letter-spacing:0.02em;
@@ -320,7 +300,17 @@
   .card-notes{ color:var(--text-2); font-size:13px; line-height:1.5; font-style:italic; }
   .card-chips{ display:flex; flex-wrap:wrap; gap:6px; margin-top:2px; }
   .pill{ padding:4px 10px; border-radius:999px; font-size:11.5px; font-weight:700; white-space:nowrap; }
-  .pill-occasion{ background:rgba(51,217,255,0.12); color:#8be8ff; border:1px solid rgba(51,217,255,0.35); }
+  .pill-mood{
+    background:color-mix(in srgb, var(--mood-c) 15%, transparent);
+    color:var(--mood-c);
+    border:1px solid color-mix(in srgb, var(--mood-c) 40%, transparent);
+  }
+  [data-theme="light"] .pill-mood{
+    background:var(--mood-c);
+    color:#fff;
+    border:1px solid transparent;
+  }
+  .pill-occasion{ background:var(--occasion-bg); color:var(--occasion-text); border:1px solid var(--occasion-border); }
 
   .player-row{
     margin-top:6px;
@@ -414,7 +404,6 @@
   table.songs-table th:hover{ color:var(--text-0); }
   table.songs-table td{ padding:12px 14px; border-bottom:1px solid var(--border); color:var(--text-1); vertical-align:top; }
   table.songs-table tr:hover td{ background:rgba(255,47,214,0.05); }
-  table.songs-table tr.match td:first-child{ box-shadow:inset 3px 0 0 var(--glow-color,#ff2fd6); }
   table.songs-table td a{ color:var(--coral); text-decoration:none; font-weight:700; }
   .table-chip-cell{ display:flex; flex-wrap:wrap; gap:4px; }
 
@@ -434,8 +423,8 @@
         <stop offset="100%" stop-color="#33d9ff"/>
       </linearGradient>
       <linearGradient id="bgCassetteFill" x1="0" y1="0" x2="0" y2="400" gradientUnits="userSpaceOnUse">
-        <stop offset="0%" stop-color="#2a1360"/>
-        <stop offset="100%" stop-color="#170a38"/>
+        <stop offset="0%" stop-color="var(--cassette-fill-1)"/>
+        <stop offset="100%" stop-color="var(--cassette-fill-2)"/>
       </linearGradient>
     </defs>
     <!-- body -->
@@ -484,7 +473,7 @@
           <stop offset="100%" stop-color="#33d9ff"/>
         </linearGradient>
       </defs>
-      <rect x="1.5" y="1.5" width="61" height="41" rx="7" fill="#1c0e3e" stroke="url(#logoGrad)" stroke-width="2.5"/>
+      <rect x="1.5" y="1.5" width="61" height="41" rx="7" fill="var(--logo-fill)" stroke="url(#logoGrad)" stroke-width="2.5"/>
       <circle cx="9" cy="7.5" r="1.6" fill="url(#logoGrad)"/>
       <circle cx="55" cy="7.5" r="1.6" fill="url(#logoGrad)"/>
       <circle cx="9" cy="36.5" r="1.6" fill="url(#logoGrad)"/>
@@ -498,8 +487,9 @@
     </svg>
     <div class="titles">
       <h1>Magic Music Box</h1>
-      <div class="sub" style="color:#c6b3ec;">Songs for Pre-K Orange - the best class ever!</div>
+      <div class="sub">Songs for Pre-K Orange - the best class ever!</div>
     </div>
+    <button class="theme-toggle" id="themeToggle" type="button" aria-label="Switch to light theme"></button>
   </header>
 
   <div class="callout">
@@ -508,25 +498,13 @@
 
   <div class="cat-tabs" id="catTabs"></div>
 
-  <div class="filter-bar">
-    <div class="dropdown-row">
-      <div class="dropdown" data-key="mood">
-        <button class="dropdown-pill" id="moodPillBtn" type="button">Mood</button>
-        <div class="dropdown-popover" id="moodPopover"></div>
-      </div>
-      <div class="dropdown" data-key="occasion">
-        <button class="dropdown-pill" id="occPillBtn" type="button">Find songs for…</button>
-        <div class="dropdown-popover" id="occPopover"></div>
-      </div>
-      <div class="view-toggle">
-        <button class="view-btn active" data-view="grid" id="gridBtn">Card grid</button>
-        <button class="view-btn" data-view="table" id="tableBtn">List</button>
-      </div>
+  <div class="controls-row">
+    <div class="result-count" id="resultCount"></div>
+    <div class="view-pill">
+      <button class="view-pill-btn active" data-view="grid" id="gridBtn" type="button">Card grid</button>
+      <button class="view-pill-btn" data-view="table" id="tableBtn" type="button">List</button>
     </div>
-    <div class="active-filters" id="activeFilters" style="display:none;"></div>
   </div>
-
-  <div class="result-count" id="resultCount"></div>
 
   <div id="gridView" class="grid"></div>
   <div id="tableView" class="table-wrap" style="display:none;">
@@ -556,17 +534,28 @@ const ICON_PAUSE = `<svg viewBox="0 0 24 24" width="14" height="14" fill="#fff" 
 
 const ICON_DOWNLOAD = `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 3v12m0 0l-4.5-4.5M12 15l4.5-4.5" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 
-const ICON_CHEVRON = `<svg class="chevron" viewBox="0 0 24 24" width="10" height="10" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
-
 const ICON_CLOSE = `<svg viewBox="0 0 24 24" width="11" height="11" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>`;
 
-const OCCASIONS = [...new Set(SONGS.map(s => s.occasion))];
-const MOODS = Object.keys(MOOD_COLORS);
+const ICON_SUN = `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="4.5" stroke="currentColor" stroke-width="2"/><path d="M12 2.5v2.5M12 19v2.5M4.2 4.2l1.8 1.8M18 18l1.8 1.8M2.5 12H5M19 12h2.5M4.2 19.8L6 18M18 6l1.8-1.8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>`;
+
+const ICON_MOON = `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>`;
+
+/* ---------- theme toggle ---------- */
+const themeToggleBtn = document.getElementById('themeToggle');
+function applyTheme(theme){
+  document.documentElement.setAttribute('data-theme', theme);
+  themeToggleBtn.innerHTML = theme === 'light' ? ICON_MOON : ICON_SUN;
+  themeToggleBtn.setAttribute('aria-label', theme === 'light' ? 'Switch to dark theme' : 'Switch to light theme');
+  localStorage.setItem('mmb-theme', theme);
+}
+applyTheme(localStorage.getItem('mmb-theme') || 'dark');
+themeToggleBtn.addEventListener('click', () => {
+  const current = document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
+  applyTheme(current === 'light' ? 'dark' : 'light');
+});
 
 const state = {
   activeCategory: "all",
-  activeMoods: new Set(),
-  activeOccasions: new Set(),
   view: "grid"
 };
 
@@ -582,71 +571,8 @@ function renderCatTabs(){
   });
 }
 
-function buildDropdown(pillId, popId, label, options, activeSet, colorMap){
-  const pillBtn = document.getElementById(pillId);
-  const pop = document.getElementById(popId);
-  pillBtn.innerHTML = (activeSet.size ? `${label} (${activeSet.size})` : label) + ' ' + ICON_CHEVRON;
-  pillBtn.classList.toggle('has-active', activeSet.size > 0);
-  pop.innerHTML = "";
-  options.forEach(opt => {
-    const row = document.createElement('label');
-    row.className = "dropdown-option";
-    const swatch = colorMap ? `<span class="swatch" style="background:${colorMap[opt]}"></span>` : "";
-    row.innerHTML = `<input type="checkbox" ${activeSet.has(opt) ? "checked" : ""}> ${swatch} ${opt}`;
-    row.querySelector('input').addEventListener('change', (e) => {
-      if (e.target.checked) activeSet.add(opt); else activeSet.delete(opt);
-      renderAll();
-    });
-    pop.appendChild(row);
-  });
-  pillBtn.onclick = (e) => {
-    e.stopPropagation();
-    document.querySelectorAll('.dropdown-popover').forEach(p => { if (p !== pop) p.classList.remove('open'); });
-    pop.classList.toggle('open');
-  };
-}
-
-document.addEventListener('click', () => document.querySelectorAll('.dropdown-popover').forEach(p => p.classList.remove('open')));
-
-function renderActiveFilters(){
-  const wrap = document.getElementById('activeFilters');
-  const tags = [];
-  state.activeMoods.forEach(v => tags.push({group:'mood', value:v}));
-  state.activeOccasions.forEach(v => tags.push({group:'occasion', value:v}));
-  if (!tags.length){ wrap.style.display = "none"; wrap.innerHTML = ""; return; }
-  wrap.style.display = "flex";
-  wrap.innerHTML = "";
-  tags.forEach(t => {
-    const tag = document.createElement('span');
-    tag.className = "active-filter-tag";
-    tag.innerHTML = `${t.value} <button aria-label="Remove filter: ${t.value}">${ICON_CLOSE}</button>`;
-    tag.querySelector('button').addEventListener('click', () => {
-      if (t.group === 'mood') state.activeMoods.delete(t.value);
-      if (t.group === 'occasion') state.activeOccasions.delete(t.value);
-      renderAll();
-    });
-    wrap.appendChild(tag);
-  });
-  const clear = document.createElement('span');
-  clear.className = "clear-all-link";
-  clear.textContent = "Clear all";
-  clear.addEventListener('click', () => {
-    state.activeMoods.clear(); state.activeOccasions.clear();
-    renderAll();
-  });
-  wrap.appendChild(clear);
-}
-
 function getFiltered(){
-  let list = state.activeCategory === "all" ? SONGS : SONGS.filter(s => s.category.includes(state.activeCategory));
-  if (state.activeMoods.size) list = list.filter(s => s.mood.some(m => state.activeMoods.has(m)));
-  if (state.activeOccasions.size) list = list.filter(s => state.activeOccasions.has(s.occasion));
-  return list;
-}
-
-function isMatch(song){
-  // "Find songs for..." glow: highlight when an occasion filter is active and matches
-  return state.activeOccasions.size > 0 && state.activeOccasions.has(song.occasion);
+  return state.activeCategory === "all" ? SONGS : SONGS.filter(s => s.category.includes(state.activeCategory));
 }
 
 function renderGrid(list){
@@ -658,10 +584,8 @@ function renderGrid(list){
   grid.innerHTML = "";
   list.forEach(song => {
     const card = document.createElement('div');
-    const match = isMatch(song);
-    card.className = "card" + (match ? " match" : "");
-    if (match) card.style.setProperty('--glow-color', MOOD_COLORS[song.mood[0]]);
-    const moodChips = song.mood.map(m => `<span class="pill" style="background:${MOOD_COLORS[m]}22; color:${MOOD_COLORS[m]}; border:1px solid ${MOOD_COLORS[m]}55;">${m}</span>`).join("");
+    card.className = "card";
+    const moodChips = song.mood.map(m => `<span class="pill pill-mood" style="--mood-c:${MOOD_COLORS[m]}">${m}</span>`).join("");
     card.innerHTML = `
       <div class="card-duration">${song.dur}</div>
       <div class="card-name"><span class="play-ic">${ICON_NOTE}</span>${song.name}</div>
@@ -757,8 +681,7 @@ function renderTable(list){
   body.innerHTML = "";
   list.forEach(song => {
     const tr = document.createElement('tr');
-    if (isMatch(song)){ tr.className = "match"; tr.style.setProperty('--glow-color', MOOD_COLORS[song.mood[0]]); }
-    const moodHtml = song.mood.map(m => `<span class="pill" style="background:${MOOD_COLORS[m]}22; color:${MOOD_COLORS[m]}; border:1px solid ${MOOD_COLORS[m]}55;">${m}</span>`).join("");
+    const moodHtml = song.mood.map(m => `<span class="pill pill-mood" style="--mood-c:${MOOD_COLORS[m]}">${m}</span>`).join("");
     tr.innerHTML = `
       <td>${song.dur}</td>
       <td>${song.name}<br><audio controls preload="none" style="width:190px; height:30px; margin-top:4px;"><source src="${song.url}" type="audio/mpeg"></audio> <a class="download-link" style="width:26px;height:26px;vertical-align:middle;" href="${song.url}" download title="Download ${song.name}" aria-label="Download ${song.name}">${ICON_DOWNLOAD}</a></td>
@@ -772,9 +695,6 @@ function renderTable(list){
 
 function renderAll(){
   renderCatTabs();
-  buildDropdown('moodPillBtn', 'moodPopover', 'Mood', MOODS, state.activeMoods, MOOD_COLORS);
-  buildDropdown('occPillBtn', 'occPopover', 'Find songs for…', OCCASIONS, state.activeOccasions, null);
-  renderActiveFilters();
   const list = getFiltered();
   document.getElementById('resultCount').textContent = `${list.length} song${list.length === 1 ? "" : "s"}`;
   if (state.view === "grid") renderGrid(list); else renderTable(list);
