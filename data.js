@@ -35,6 +35,6 @@ const CATEGORIES = [
 //   occasion   free-text label for "Find songs for…" (e.g. "Naptime", "Circle Time")
 //   category   array of CATEGORIES keys this song should appear under (can be empty)
 const SONGS = [
-  { dur: "1:38", sortDur: "0138", name: "T is a Happy Letter", url: "songs/t-is-a-happy-letter.mp3", performer: "DJ Circle Time ft. Pre-K Orange", notes: "A cheerful song celebrating the letter T.", mood: ["Letters & Counting", "Silly & Giggles"], occasion: "Circle Time", category: ["letters", "silly"] }
-  { dur: "3:36", sortDur: "0336", name: "Tiny Turle", url: "songs/tiny-turtle.mp3", performer: "DJ Circle Time ft. Pre-K Orange", notes: "A cheerful song about turtles.", mood: ["Silly & Giggles"], occasion: "Circle Time", category: ["silly"] }
+  { dur: "1:38", sortDur: "0138", name: "T is a Happy Letter", url: "songs/t-is-a-happy-letter.mp3", performer: "DJ Circle Time ft. Pre-K Orange", notes: "A cheerful song celebrating the letter T.", mood: ["Letters & Counting", "Silly & Giggles"], occasion: "Circle Time", category: ["letters", "silly"] },
+  { dur: "3:36", sortDur: "0336", name: "Tiny Turtle", url: "songs/tiny-turtle.mp3", performer: "DJ Circle Time ft. Pre-K Orange", notes: "A cheerful song about turtles.", mood: ["Silly & Giggles"], occasion: "Circle Time", category: ["silly"] }
 ];
