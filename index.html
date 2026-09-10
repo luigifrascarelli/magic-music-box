@@ -122,10 +122,24 @@
   /* ---------- header ---------- */
   header{
     display:flex;
-    align-items:flex-start;
+    align-items:center;
+    justify-content:space-between;
     gap:16px;
     margin-bottom:24px;
     flex-wrap:wrap;
+  }
+  .header-brand{
+    display:flex;
+    align-items:flex-start;
+    gap:16px;
+    flex:1;
+    min-width:220px;
+  }
+  .header-controls{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    flex-shrink:0;
   }
   header .logo{
     width:66px;
@@ -136,12 +150,11 @@
   header .titles{ flex:1; min-width:0; }
   header .titles h1{
     margin:0;
-    width:max-content;
-    max-width:100%;
     font-family:'Audiowide', 'Poppins', sans-serif;
-    font-size:clamp(24px, 3.6vw, 38px);
+    font-size:clamp(22px, 3.6vw, 38px);
     font-weight:400;
     letter-spacing:0.01em;
+    line-height:1.15;
     background:linear-gradient(90deg, #ff2fd6 0%, #ff6ec7 35%, #b967ff 65%, #33d9ff 100%);
     -webkit-background-clip:text;
     background-clip:text;
@@ -379,6 +392,7 @@
 
   @media (max-width:640px){
     .page{ padding:24px 16px 70px; }
+    .header-controls{ width:100%; justify-content:space-between; }
   }
 
   /* ---------- nav pill ---------- */
@@ -596,34 +610,38 @@
 <div class="page">
 
   <header>
-    <svg class="logo" viewBox="0 0 64 44" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <linearGradient id="logoGrad" x1="0" y1="0" x2="64" y2="44" gradientUnits="userSpaceOnUse">
-          <stop offset="0%" stop-color="#ff2fd6"/>
-          <stop offset="100%" stop-color="#33d9ff"/>
-        </linearGradient>
-      </defs>
-      <rect x="1.5" y="1.5" width="61" height="41" rx="7" fill="var(--logo-fill)" stroke="url(#logoGrad)" stroke-width="2.5"/>
-      <circle cx="9" cy="7.5" r="1.6" fill="url(#logoGrad)"/>
-      <circle cx="55" cy="7.5" r="1.6" fill="url(#logoGrad)"/>
-      <circle cx="9" cy="36.5" r="1.6" fill="url(#logoGrad)"/>
-      <circle cx="55" cy="36.5" r="1.6" fill="url(#logoGrad)"/>
-      <rect x="10" y="6" width="44" height="12" rx="3" fill="none" stroke="url(#logoGrad)" stroke-width="2"/>
-      <circle cx="18" cy="30" r="7.5" fill="none" stroke="url(#logoGrad)" stroke-width="2.2"/>
-      <circle cx="18" cy="30" r="2.2" fill="url(#logoGrad)"/>
-      <circle cx="46" cy="30" r="7.5" fill="none" stroke="url(#logoGrad)" stroke-width="2.2"/>
-      <circle cx="46" cy="30" r="2.2" fill="url(#logoGrad)"/>
-      <rect x="28" y="27" width="8" height="6" rx="1.5" fill="url(#logoGrad)"/>
-    </svg>
-    <div class="titles">
-      <h1>Magic Music Box</h1>
-      <div class="sub">Songs for Pre-K Orange - the best class ever!</div>
+    <div class="header-brand">
+      <svg class="logo" viewBox="0 0 64 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="logoGrad" x1="0" y1="0" x2="64" y2="44" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#ff2fd6"/>
+            <stop offset="100%" stop-color="#33d9ff"/>
+          </linearGradient>
+        </defs>
+        <rect x="1.5" y="1.5" width="61" height="41" rx="7" fill="var(--logo-fill)" stroke="url(#logoGrad)" stroke-width="2.5"/>
+        <circle cx="9" cy="7.5" r="1.6" fill="url(#logoGrad)"/>
+        <circle cx="55" cy="7.5" r="1.6" fill="url(#logoGrad)"/>
+        <circle cx="9" cy="36.5" r="1.6" fill="url(#logoGrad)"/>
+        <circle cx="55" cy="36.5" r="1.6" fill="url(#logoGrad)"/>
+        <rect x="10" y="6" width="44" height="12" rx="3" fill="none" stroke="url(#logoGrad)" stroke-width="2"/>
+        <circle cx="18" cy="30" r="7.5" fill="none" stroke="url(#logoGrad)" stroke-width="2.2"/>
+        <circle cx="18" cy="30" r="2.2" fill="url(#logoGrad)"/>
+        <circle cx="46" cy="30" r="7.5" fill="none" stroke="url(#logoGrad)" stroke-width="2.2"/>
+        <circle cx="46" cy="30" r="2.2" fill="url(#logoGrad)"/>
+        <rect x="28" y="27" width="8" height="6" rx="1.5" fill="url(#logoGrad)"/>
+      </svg>
+      <div class="titles">
+        <h1>Magic Music Box</h1>
+        <div class="sub">Songs for Pre-K Orange - the best class ever!</div>
+      </div>
     </div>
-    <div class="nav-pill">
-      <button class="nav-pill-btn active" id="navLibrary" type="button">Library</button>
-      <button class="nav-pill-btn" id="navJukebox" type="button">Jukebox</button>
+    <div class="header-controls">
+      <div class="nav-pill">
+        <button class="nav-pill-btn active" id="navLibrary" type="button">Library</button>
+        <button class="nav-pill-btn" id="navJukebox" type="button">Jukebox</button>
+      </div>
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Switch to light theme"></button>
     </div>
-    <button class="theme-toggle" id="themeToggle" type="button" aria-label="Switch to light theme"></button>
   </header>
 
   <div id="libraryView">
