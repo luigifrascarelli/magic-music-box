@@ -1024,7 +1024,7 @@ function renderGrid(list){
       <div class="card-name">${song.name} <span class="mini-eq" style="display:none;">${EQ_HTML}</span></div>
       <div class="card-meta"><b>Created by:</b> ${song.performer}</div>
       <div class="card-notes">${song.notes}</div>
-      <div class="card-chips">${moodChips}<span class="pill pill-occasion">${song.occasion}</span></div>
+      <div class="card-chips">${moodChips}${song.occasion ? `<span class="pill pill-occasion">${song.occasion}</span>` : ""}</div>
       <div class="player-row">
         <button class="card-play-btn" type="button" aria-label="Play ${song.name}">Play</button>
         <a class="download-link" href="${song.url}" download title="Download ${song.name}" aria-label="Download ${song.name}">${ICON_DOWNLOAD}</a>
