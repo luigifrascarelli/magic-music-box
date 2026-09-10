@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Magic Music Box — Music for Pre-K Orange</title>
+<title>Magic Music Box — Music for Our Class</title>
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Audiowide&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -319,63 +319,32 @@
     align-items:center;
     gap:10px;
   }
-  .play-btn{
-    flex-shrink:0;
-    width:38px;
-    height:38px;
-    border-radius:50%;
-    border:none;
-    display:inline-flex;
-    align-items:center;
-    justify-content:center;
+  .card.playing{
+    border-color:#ff2fd6;
+    box-shadow:0 0 22px rgba(255,47,214,0.3);
+  }
+  .mini-eq{ display:inline-flex; align-items:flex-end; gap:2px; height:13px; }
+  .mini-eq span{ width:3px; background:#ff2fd6; border-radius:2px; animation:eq 0.9s ease-in-out infinite; }
+  .mini-eq span:nth-child(1){ height:40%; animation-delay:0s; }
+  .mini-eq span:nth-child(2){ height:100%; animation-delay:0.2s; }
+  .mini-eq span:nth-child(3){ height:65%; animation-delay:0.4s; }
+  @keyframes eq{ 0%,100%{ transform:scaleY(0.4); } 50%{ transform:scaleY(1); } }
+  .card-play-btn{
+    align-self:flex-start;
+    padding:9px 18px;
+    border-radius:10px;
+    border:1px solid var(--border);
+    background:var(--panel-2);
+    color:var(--text-1);
+    font-size:13px;
+    font-weight:800;
+    cursor:pointer;
+  }
+  .card.playing .card-play-btn{
     background:linear-gradient(135deg,#ff2fd6,#b967ff,#33d9ff);
     color:#fff;
-    cursor:pointer;
+    border-color:transparent;
     box-shadow:0 4px 14px rgba(255,47,214,0.35);
-  }
-  .play-btn:hover{ transform:translateY(-1px); box-shadow:0 6px 18px rgba(255,47,214,0.5); }
-  .play-btn svg{ margin-left:2px; }
-  .play-btn.is-playing svg{ margin-left:0; }
-  .progress-wrap{
-    flex:1;
-    min-width:0;
-    display:flex;
-    flex-direction:column;
-    gap:5px;
-  }
-  .progress-track{
-    position:relative;
-    width:100%;
-    height:8px;
-    border-radius:999px;
-    background:rgba(255,255,255,0.12);
-    cursor:pointer;
-  }
-  .progress-fill{
-    position:absolute;
-    top:0; left:0; bottom:0;
-    width:0%;
-    border-radius:999px;
-    background:linear-gradient(90deg,#ff2fd6,#b967ff,#33d9ff);
-    box-shadow:0 0 8px rgba(255,47,214,0.6);
-    pointer-events:none;
-  }
-  .progress-track::after{
-    content:"";
-    position:absolute;
-    top:50%; left:var(--progress, 0%);
-    width:12px; height:12px;
-    border-radius:50%;
-    background:#fff;
-    transform:translate(-50%, -50%);
-    box-shadow:0 0 6px rgba(0,0,0,0.4);
-    pointer-events:none;
-  }
-  .time-label{
-    font-size:12px;
-    font-weight:700;
-    color:var(--text-0);
-    letter-spacing:0.02em;
   }
   .download-link{
     flex-shrink:0;
@@ -410,6 +379,166 @@
 
   @media (max-width:640px){
     .page{ padding:24px 16px 70px; }
+  }
+
+  /* ---------- nav pill ---------- */
+  .nav-pill{
+    flex-shrink:0;
+    display:inline-flex;
+    padding:4px;
+    border-radius:999px;
+    background:var(--panel);
+    border:1px solid var(--border);
+    gap:2px;
+    margin-top:2px;
+  }
+  .nav-pill-btn{
+    padding:9px 18px;
+    border-radius:999px;
+    border:none;
+    background:transparent;
+    color:var(--text-1);
+    font-size:13px;
+    font-weight:700;
+    cursor:pointer;
+  }
+  .nav-pill-btn.active{
+    background:linear-gradient(135deg,#ff2fd6,#b967ff,#33d9ff);
+    color:#fff;
+    box-shadow:0 0 14px rgba(255,47,214,0.4);
+  }
+
+  /* ---------- shared progress track (jukebox + mini-player) ---------- */
+  .progress-track{
+    position:relative;
+    width:100%;
+    height:8px;
+    border-radius:999px;
+    background:rgba(255,255,255,0.12);
+    cursor:pointer;
+  }
+  .progress-fill{
+    position:absolute;
+    top:0; left:0; bottom:0;
+    width:0%;
+    border-radius:999px;
+    background:linear-gradient(90deg,#ff2fd6,#b967ff,#33d9ff);
+    box-shadow:0 0 8px rgba(255,47,214,0.6);
+    pointer-events:none;
+  }
+  .progress-track::after{
+    content:"";
+    position:absolute;
+    top:50%; left:var(--progress, 0%);
+    width:12px; height:12px;
+    border-radius:50%;
+    background:#fff;
+    transform:translate(-50%, -50%);
+    box-shadow:0 0 6px rgba(0,0,0,0.4);
+    pointer-events:none;
+  }
+
+  /* ---------- jukebox tab ---------- */
+  .jukebox-panel{
+    position:relative;
+    background:linear-gradient(160deg, var(--panel-2), var(--panel));
+    border:1px solid var(--border);
+    border-radius:24px;
+    padding:32px 28px;
+    text-align:center;
+    overflow:hidden;
+    margin-bottom:22px;
+  }
+  .cassette-visual{ position:relative; width:180px; height:120px; margin:0 auto 22px; }
+  .cassette-visual svg{ width:100%; height:100%; display:block; }
+  .reel{ transform-origin:center; }
+  .reel.spinning{ animation:spin 3s linear infinite; }
+  @keyframes spin{ from{ transform:rotate(0deg); } to{ transform:rotate(360deg); } }
+
+  .now-playing-label{ font-size:11px; font-weight:800; letter-spacing:0.12em; text-transform:uppercase; color:#33d9ff; margin-bottom:6px; }
+  .now-playing-title{ font-size:26px; font-weight:800; margin-bottom:6px; color:var(--text-0); }
+  .now-playing-meta{ color:var(--text-1); font-size:14px; margin-bottom:22px; }
+
+  .progress-wrap-jb{ max-width:480px; margin:0 auto 22px; display:flex; align-items:center; gap:10px; }
+  .progress-time{ font-size:12px; font-weight:700; color:var(--text-2); width:38px; flex-shrink:0; }
+  .progress-time.end{ text-align:right; }
+
+  .transport{ display:flex; align-items:center; justify-content:center; gap:18px; }
+  .transport button{ background:none; border:none; color:var(--text-1); cursor:pointer; display:inline-flex; align-items:center; justify-content:center; padding:8px; border-radius:50%; }
+  .transport button:hover{ color:var(--text-0); }
+  .toggle-btn{ width:36px; height:36px; font-size:11px; position:relative; }
+  .toggle-btn.active{ color:#ff2fd6; }
+  .toggle-dot{ position:absolute; bottom:2px; left:50%; transform:translateX(-50%); width:4px; height:4px; border-radius:50%; background:#ff2fd6; opacity:0; }
+  .toggle-btn.active .toggle-dot{ opacity:1; }
+  .skip-btn{ width:42px; height:42px; }
+  .play-btn-lg{
+    width:64px; height:64px; border-radius:50%;
+    background:linear-gradient(135deg,#ff2fd6,#b967ff,#33d9ff) !important;
+    color:#fff !important; box-shadow:0 6px 22px rgba(255,47,214,0.4);
+  }
+
+  .queue-header{ display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
+  .queue-header h2{ font-size:15px; font-weight:800; margin:0; color:var(--text-0); }
+  .queue-header .queue-count{ font-size:12.5px; color:var(--text-2); }
+  .queue-list{ display:flex; flex-direction:column; gap:8px; margin-bottom:20px; }
+  .queue-item{
+    display:flex; align-items:center; gap:14px;
+    padding:12px 16px; border-radius:14px;
+    background:var(--panel); border:1px solid var(--border);
+    cursor:pointer; transition:border-color 0.15s ease, transform 0.15s ease;
+  }
+  .queue-item:hover{ border-color:rgba(255,47,214,0.4); transform:translateX(2px); }
+  .queue-item.current{
+    border-color:#ff2fd6;
+    background:linear-gradient(90deg, rgba(255,47,214,0.12), rgba(51,217,255,0.08));
+    box-shadow:0 0 18px rgba(255,47,214,0.25);
+  }
+  .queue-index{ width:22px; flex-shrink:0; text-align:center; font-size:12px; font-weight:800; color:var(--text-2); }
+  .queue-item.current .queue-index{ display:none; }
+  .queue-item:not(.current) .queue-eq{ display:none; }
+  .queue-eq{ width:22px; flex-shrink:0; display:flex; align-items:flex-end; justify-content:center; gap:2px; height:14px; }
+  .queue-info{ flex:1; min-width:0; }
+  .queue-name{ font-size:14.5px; font-weight:700; color:var(--text-0); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .queue-sub{ font-size:12px; color:var(--text-2); }
+  .queue-dur{ font-size:12px; font-weight:700; color:var(--text-2); flex-shrink:0; }
+
+  /* ---------- persistent mini-player ---------- */
+  #miniPlayer{
+    position:fixed; left:0; right:0; bottom:0; z-index:50;
+    background:var(--panel-2);
+    backdrop-filter:blur(14px);
+    -webkit-backdrop-filter:blur(14px);
+    border-top:1px solid rgba(255,47,214,0.3);
+    box-shadow:0 -8px 30px rgba(0,0,0,0.4);
+    transform:translateY(100%);
+    transition:transform 0.25s ease;
+  }
+  #miniPlayer.visible{ transform:translateY(0); }
+  #miniProgressTrack{ height:3px; width:100%; background:rgba(255,255,255,0.1); cursor:pointer; }
+  #miniProgressFill{ height:100%; width:0%; background:linear-gradient(90deg,#ff2fd6,#b967ff,#33d9ff); box-shadow:0 0 8px rgba(255,47,214,0.6); }
+  .mini-inner{ max-width:1200px; margin:0 auto; padding:10px 20px; display:flex; align-items:center; gap:14px; }
+  .mini-art{
+    flex-shrink:0; width:42px; height:42px; border-radius:10px;
+    background:linear-gradient(135deg,#ff2fd6,#b967ff,#33d9ff);
+    display:flex; align-items:center; justify-content:center;
+  }
+  .mini-info{ flex:1; min-width:0; cursor:pointer; }
+  .mini-title{ font-size:14px; font-weight:800; color:var(--text-0); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .mini-artist{ font-size:12px; color:var(--text-2); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .mini-controls{ display:flex; align-items:center; gap:6px; flex-shrink:0; }
+  .mini-controls button{ background:none; border:none; color:var(--text-1); cursor:pointer; padding:8px; border-radius:50%; display:inline-flex; }
+  .mini-controls button:hover{ color:var(--text-0); }
+  .mini-play-btn{
+    width:38px; height:38px; border-radius:50%;
+    background:linear-gradient(135deg,#ff2fd6,#b967ff,#33d9ff) !important;
+    color:#fff !important; display:flex; align-items:center; justify-content:center;
+  }
+  .mini-expand{ flex-shrink:0; color:var(--text-1); }
+  .mini-expand:hover{ color:var(--text-0); }
+
+  @media (max-width:560px){
+    .mini-artist{ display:none; }
+    .mini-inner{ padding:8px 14px; gap:10px; }
   }
 </style>
 </head>
@@ -490,8 +619,14 @@
       <h1>Magic Music Box</h1>
       <div class="sub">Songs for Pre-K Orange - the best class ever!</div>
     </div>
+    <div class="nav-pill">
+      <button class="nav-pill-btn active" id="navLibrary" type="button">Library</button>
+      <button class="nav-pill-btn" id="navJukebox" type="button">Jukebox</button>
+    </div>
     <button class="theme-toggle" id="themeToggle" type="button" aria-label="Switch to light theme"></button>
   </header>
+
+  <div id="libraryView">
 
   <div class="callout">
     Free to listen and share. New songs get added as we learn them — check back throughout the year! Right-click any "Listen" button to save the file.
@@ -523,23 +658,126 @@
     </table>
   </div>
 
+  </div><!-- /libraryView -->
+
+  <div id="jukeboxView" style="display:none;">
+
+    <div class="jukebox-panel">
+      <div class="cassette-visual">
+        <svg viewBox="0 0 180 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="jbCassetteGrad" x1="0" y1="0" x2="180" y2="120" gradientUnits="userSpaceOnUse">
+              <stop offset="0%" stop-color="#ff2fd6"/>
+              <stop offset="50%" stop-color="#b967ff"/>
+              <stop offset="100%" stop-color="#33d9ff"/>
+            </linearGradient>
+          </defs>
+          <rect x="4" y="4" width="172" height="112" rx="16" fill="var(--panel-2)" stroke="url(#jbCassetteGrad)" stroke-width="4"/>
+          <rect x="26" y="16" width="128" height="26" rx="6" fill="none" stroke="url(#jbCassetteGrad)" stroke-width="3"/>
+          <line x1="36" y1="26" x2="100" y2="26" stroke="url(#jbCassetteGrad)" stroke-width="3" stroke-linecap="round"/>
+          <line x1="36" y1="34" x2="80" y2="34" stroke="url(#jbCassetteGrad)" stroke-width="3" stroke-linecap="round"/>
+          <g class="reel" id="jbReelLeft">
+            <circle cx="52" cy="80" r="24" fill="none" stroke="url(#jbCassetteGrad)" stroke-width="3"/>
+            <circle cx="52" cy="80" r="7" fill="none" stroke="url(#jbCassetteGrad)" stroke-width="3"/>
+            <line x1="52" y1="60" x2="52" y2="67" stroke="url(#jbCassetteGrad)" stroke-width="3" stroke-linecap="round"/>
+            <line x1="52" y1="93" x2="52" y2="100" stroke="url(#jbCassetteGrad)" stroke-width="3" stroke-linecap="round"/>
+            <line x1="32" y1="80" x2="39" y2="80" stroke="url(#jbCassetteGrad)" stroke-width="3" stroke-linecap="round"/>
+            <line x1="65" y1="80" x2="72" y2="80" stroke="url(#jbCassetteGrad)" stroke-width="3" stroke-linecap="round"/>
+          </g>
+          <g class="reel" id="jbReelRight">
+            <circle cx="128" cy="80" r="24" fill="none" stroke="url(#jbCassetteGrad)" stroke-width="3"/>
+            <circle cx="128" cy="80" r="7" fill="none" stroke="url(#jbCassetteGrad)" stroke-width="3"/>
+            <line x1="128" y1="60" x2="128" y2="67" stroke="url(#jbCassetteGrad)" stroke-width="3" stroke-linecap="round"/>
+            <line x1="128" y1="93" x2="128" y2="100" stroke="url(#jbCassetteGrad)" stroke-width="3" stroke-linecap="round"/>
+            <line x1="108" y1="80" x2="115" y2="80" stroke="url(#jbCassetteGrad)" stroke-width="3" stroke-linecap="round"/>
+            <line x1="141" y1="80" x2="148" y2="80" stroke="url(#jbCassetteGrad)" stroke-width="3" stroke-linecap="round"/>
+          </g>
+          <rect x="82" y="73" width="16" height="14" rx="3" fill="none" stroke="url(#jbCassetteGrad)" stroke-width="3"/>
+        </svg>
+      </div>
+
+      <div class="now-playing-label">Now Playing</div>
+      <div class="now-playing-title" id="jbTitle">—</div>
+      <div class="now-playing-meta" id="jbMeta">—</div>
+
+      <div class="progress-wrap-jb">
+        <div class="progress-time" id="jbCurTime">0:00</div>
+        <div class="progress-track" id="jbProgressTrack"><div class="progress-fill" id="jbProgressFill"></div></div>
+        <div class="progress-time end" id="jbDurTime">0:00</div>
+      </div>
+
+      <div class="transport">
+        <button class="toggle-btn" id="jbShuffleBtn" title="Shuffle" aria-label="Toggle shuffle">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 6h3.5l9 12H19M3 18h3.5l3-4M16 6h3M19 6l-3-3M19 6l-3 3M19 18l-3-3M19 18l-3 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span class="toggle-dot"></span>
+        </button>
+        <button class="skip-btn" id="jbPrevBtn" title="Previous" aria-label="Previous song">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M6 5h2v14H6zM19 5v14l-11-7z"/></svg>
+        </button>
+        <button class="play-btn-lg" id="jbPlayBtn" title="Play/Pause" aria-label="Play or pause">
+          <svg id="jbPlayIcon" viewBox="0 0 24 24" width="22" height="22" fill="#fff" xmlns="http://www.w3.org/2000/svg"><path d="M6 4.5v15l13-7.5-13-7.5z"/></svg>
+        </button>
+        <button class="skip-btn" id="jbNextBtn" title="Next" aria-label="Next song">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M16 5h2v14h-2zM5 5v14l11-7z"/></svg>
+        </button>
+        <button class="toggle-btn" id="jbRepeatBtn" title="Repeat all" aria-label="Toggle repeat">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 7h13a3 3 0 0 1 3 3v2M20 17H7a3 3 0 0 1-3-3v-2M8 4L4 7l4 3M16 20l4-3-4-3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span class="toggle-dot"></span>
+        </button>
+      </div>
+    </div>
+
+    <div class="queue-header">
+      <h2>Up Next</h2>
+      <div class="queue-count" id="queueCount"></div>
+    </div>
+    <div class="queue-list" id="queueList"></div>
+
+  </div><!-- /jukeboxView -->
+
+</div><!-- /.page -->
+
+<div id="miniPlayer">
+  <div id="miniProgressTrack"><div id="miniProgressFill"></div></div>
+  <div class="mini-inner">
+    <div class="mini-art">
+      <svg class="reel" id="miniReel" viewBox="0 0 24 24" width="22" height="22" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="12" cy="12" r="8" stroke="#fff" stroke-width="2"/>
+        <circle cx="12" cy="12" r="2.4" fill="#fff"/>
+        <line x1="12" y1="4" x2="12" y2="6.5" stroke="#fff" stroke-width="2" stroke-linecap="round"/>
+        <line x1="12" y1="17.5" x2="12" y2="20" stroke="#fff" stroke-width="2" stroke-linecap="round"/>
+        <line x1="4" y1="12" x2="6.5" y2="12" stroke="#fff" stroke-width="2" stroke-linecap="round"/>
+        <line x1="17.5" y1="12" x2="20" y2="12" stroke="#fff" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <div class="mini-info" id="miniInfo">
+      <div class="mini-title" id="miniTitle">—</div>
+      <div class="mini-artist" id="miniArtist">—</div>
+    </div>
+    <div class="mini-controls">
+      <button id="miniPrevBtn" aria-label="Previous"><svg viewBox="0 0 24 24" width="17" height="17" fill="currentColor"><path d="M6 5h2v14H6zM19 5v14l-11-7z"/></svg></button>
+      <button class="mini-play-btn" id="miniPlayBtn" aria-label="Play or pause"><svg id="miniPlayIcon" viewBox="0 0 24 24" width="16" height="16" fill="#fff"><path d="M6 4.5v15l13-7.5-13-7.5z"/></svg></button>
+      <button id="miniNextBtn" aria-label="Next"><svg viewBox="0 0 24 24" width="17" height="17" fill="currentColor"><path d="M16 5h2v14h-2zM5 5v14l11-7z"/></svg></button>
+    </div>
+    <button class="mini-expand" id="miniExpandBtn" aria-label="Open Jukebox">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M7 14l5-5 5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+  </div>
 </div>
+
+<audio id="globalAudio" preload="none"></audio>
 
 <script src="data.js"></script>
 <script>
-const ICON_NOTE = `<svg viewBox="0 0 24 24" width="12" height="12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M9 18V5l11-2v12" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="6.5" cy="18" r="2.5" fill="#fff"/><circle cx="17.5" cy="16" r="2.5" fill="#fff"/></svg>`;
-
-const ICON_PLAY = `<svg viewBox="0 0 24 24" width="14" height="14" fill="#fff" xmlns="http://www.w3.org/2000/svg"><path d="M6 4.5v15l13-7.5-13-7.5z"/></svg>`;
-
-const ICON_PAUSE = `<svg viewBox="0 0 24 24" width="14" height="14" fill="#fff" xmlns="http://www.w3.org/2000/svg"><rect x="5" y="4" width="5" height="16" rx="1.5"/><rect x="14" y="4" width="5" height="16" rx="1.5"/></svg>`;
-
 const ICON_DOWNLOAD = `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 3v12m0 0l-4.5-4.5M12 15l4.5-4.5" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
-
-const ICON_CLOSE = `<svg viewBox="0 0 24 24" width="11" height="11" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>`;
 
 const ICON_SUN = `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="4.5" stroke="currentColor" stroke-width="2"/><path d="M12 2.5v2.5M12 19v2.5M4.2 4.2l1.8 1.8M18 18l1.8 1.8M2.5 12H5M19 12h2.5M4.2 19.8L6 18M18 6l1.8-1.8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>`;
 
 const ICON_MOON = `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>`;
+
+const ICON_PLAY_PATH = `<path d="M6 4.5v15l13-7.5-13-7.5z"/>`;
+const ICON_PAUSE_PATH = `<rect x="5" y="4" width="5" height="16" rx="1.5"/><rect x="14" y="4" width="5" height="16" rx="1.5"/>`;
+const EQ_HTML = `<span></span><span></span><span></span>`;
 
 /* ---------- theme toggle ---------- */
 const themeToggleBtn = document.getElementById('themeToggle');
@@ -555,6 +793,23 @@ themeToggleBtn.addEventListener('click', () => {
   applyTheme(current === 'light' ? 'dark' : 'light');
 });
 
+/* ---------- tab switching (Library / Jukebox) ---------- */
+const navLibrary = document.getElementById('navLibrary');
+const navJukebox = document.getElementById('navJukebox');
+const libraryView = document.getElementById('libraryView');
+const jukeboxView = document.getElementById('jukeboxView');
+
+function switchTab(tab){
+  const isLibrary = tab === 'library';
+  libraryView.style.display = isLibrary ? '' : 'none';
+  jukeboxView.style.display = isLibrary ? 'none' : '';
+  navLibrary.classList.toggle('active', isLibrary);
+  navJukebox.classList.toggle('active', !isLibrary);
+}
+navLibrary.addEventListener('click', () => switchTab('library'));
+navJukebox.addEventListener('click', () => switchTab('jukebox'));
+
+/* ---------- library filtering state ---------- */
 const state = {
   activeCategory: "all",
   view: "grid"
@@ -576,6 +831,181 @@ function getFiltered(){
   return state.activeCategory === "all" ? SONGS : SONGS.filter(s => s.category.includes(state.activeCategory));
 }
 
+function formatTime(sec){
+  if (!isFinite(sec) || sec < 0) sec = 0;
+  const m = Math.floor(sec / 60);
+  const s = Math.floor(sec % 60);
+  return `${m}:${s < 10 ? "0" : ""}${s}`;
+}
+
+/* ============================================================
+   SHARED PLAYER — one <audio> element drives the Library play
+   buttons, the Jukebox tab, and the mini-player, so playback
+   continues uninterrupted as you switch views.
+   ============================================================ */
+const audio = document.getElementById('globalAudio');
+const player = {
+  index: 0,
+  order: SONGS.map((_, i) => i),
+  shuffle: false,
+  repeat: false,
+  started: false
+};
+
+function currentSong(){ return SONGS[player.order[player.index]]; }
+function currentGidx(){ return player.order[player.index]; }
+
+function loadTrack(newIndex, autoplay){
+  player.index = (newIndex + player.order.length) % player.order.length;
+  const song = currentSong();
+  audio.src = song.url;
+  refreshNowPlayingUI();
+  if (autoplay){
+    player.started = true;
+    document.getElementById('miniPlayer').classList.add('visible');
+    audio.play().catch(() => {});
+  }
+}
+
+function playFromLibrary(gidx){
+  loadTrack(player.order.indexOf(gidx), true);
+}
+
+function togglePlayPause(){
+  if (!player.started){ loadTrack(player.index, true); return; }
+  if (audio.paused){ audio.play().catch(() => {}); } else { audio.pause(); }
+}
+
+function goNext(){ loadTrack(player.index + 1, true); }
+function goPrev(){ loadTrack(player.index - 1, true); }
+
+audio.addEventListener('ended', () => {
+  if (!player.repeat && player.index === player.order.length - 1){
+    refreshNowPlayingUI();
+    return;
+  }
+  goNext();
+});
+audio.addEventListener('play', refreshNowPlayingUI);
+audio.addEventListener('pause', refreshNowPlayingUI);
+audio.addEventListener('loadedmetadata', () => {
+  document.getElementById('jbDurTime').textContent = formatTime(audio.duration);
+});
+audio.addEventListener('timeupdate', () => {
+  const pct = audio.duration ? (audio.currentTime / audio.duration) * 100 : 0;
+  const pctStr = pct + "%";
+  document.getElementById('jbProgressFill').style.width = pctStr;
+  document.getElementById('jbProgressTrack').style.setProperty('--progress', pctStr);
+  document.getElementById('jbCurTime').textContent = formatTime(audio.currentTime);
+  document.getElementById('miniProgressFill').style.width = pctStr;
+});
+
+function seekFromClick(trackEl){
+  trackEl.addEventListener('click', (e) => {
+    const rect = trackEl.getBoundingClientRect();
+    const pct = Math.min(Math.max((e.clientX - rect.left) / rect.width, 0), 1);
+    if (audio.duration) audio.currentTime = pct * audio.duration;
+  });
+}
+seekFromClick(document.getElementById('jbProgressTrack'));
+seekFromClick(document.getElementById('miniProgressTrack'));
+
+/* ---------- transport controls: Jukebox + mini-player share the same handlers ---------- */
+document.getElementById('jbPlayBtn').addEventListener('click', togglePlayPause);
+document.getElementById('miniPlayBtn').addEventListener('click', togglePlayPause);
+document.getElementById('jbNextBtn').addEventListener('click', goNext);
+document.getElementById('miniNextBtn').addEventListener('click', goNext);
+document.getElementById('jbPrevBtn').addEventListener('click', goPrev);
+document.getElementById('miniPrevBtn').addEventListener('click', goPrev);
+document.getElementById('miniInfo').addEventListener('click', () => switchTab('jukebox'));
+document.getElementById('miniExpandBtn').addEventListener('click', () => switchTab('jukebox'));
+
+function shuffleOrder(){
+  const order = SONGS.map((_, i) => i);
+  for (let i = order.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [order[i], order[j]] = [order[j], order[i]];
+  }
+  return order;
+}
+const shuffleBtn = document.getElementById('jbShuffleBtn');
+shuffleBtn.addEventListener('click', () => {
+  player.shuffle = !player.shuffle;
+  shuffleBtn.classList.toggle('active', player.shuffle);
+  const current = currentGidx();
+  player.order = player.shuffle ? shuffleOrder() : SONGS.map((_, i) => i);
+  player.index = player.order.indexOf(current);
+  renderQueue();
+});
+const repeatBtn = document.getElementById('jbRepeatBtn');
+repeatBtn.addEventListener('click', () => {
+  player.repeat = !player.repeat;
+  repeatBtn.classList.toggle('active', player.repeat);
+});
+
+/* ---------- render: now-playing panel, mini-player, queue, library highlights ---------- */
+function refreshNowPlayingUI(){
+  const song = currentSong();
+  const isPlaying = player.started && !audio.paused;
+
+  document.getElementById('jbTitle').textContent = song.name;
+  document.getElementById('jbMeta').textContent = `Created by: ${song.performer}`;
+  document.getElementById('jbPlayIcon').innerHTML = isPlaying ? ICON_PAUSE_PATH : ICON_PLAY_PATH;
+  document.getElementById('jbReelLeft').classList.toggle('spinning', isPlaying);
+  document.getElementById('jbReelRight').classList.toggle('spinning', isPlaying);
+
+  document.getElementById('miniTitle').textContent = song.name;
+  document.getElementById('miniArtist').textContent = song.performer;
+  document.getElementById('miniPlayIcon').innerHTML = isPlaying ? ICON_PAUSE_PATH : ICON_PLAY_PATH;
+  document.getElementById('miniReel').classList.toggle('spinning', isPlaying);
+
+  renderQueue();
+  syncLibraryHighlights();
+}
+
+function renderQueue(){
+  document.getElementById('queueCount').textContent = `${SONGS.length} songs`;
+  const list = document.getElementById('queueList');
+  list.innerHTML = "";
+  player.order.forEach((gidx, pos) => {
+    const song = SONGS[gidx];
+    const isCurrent = pos === player.index;
+    const item = document.createElement('div');
+    item.className = "queue-item" + (isCurrent ? " current" : "");
+    item.innerHTML = `
+      <div class="queue-index">${pos + 1}</div>
+      <div class="queue-eq">${EQ_HTML}</div>
+      <div class="queue-info">
+        <div class="queue-name">${song.name}</div>
+        <div class="queue-sub">${song.performer}</div>
+      </div>
+      <div class="queue-dur">${song.dur}</div>
+    `;
+    item.addEventListener('click', () => loadTrack(pos, true));
+    list.appendChild(item);
+  });
+}
+
+function syncLibraryHighlights(){
+  const gidx = currentGidx();
+  const isPlaying = player.started && !audio.paused;
+  document.querySelectorAll('#gridView .card').forEach(card => {
+    const isCurrent = parseInt(card.dataset.gidx, 10) === gidx;
+    card.classList.toggle('playing', isCurrent && isPlaying);
+    const btn = card.querySelector('.card-play-btn');
+    if (btn) btn.textContent = (isCurrent && isPlaying) ? 'Playing' : 'Play';
+    const eq = card.querySelector('.mini-eq');
+    if (eq) eq.style.display = (isCurrent && isPlaying) ? 'inline-flex' : 'none';
+  });
+  document.querySelectorAll('#tableBody tr').forEach(tr => {
+    const isCurrent = parseInt(tr.dataset.gidx, 10) === gidx;
+    tr.classList.toggle('playing', isCurrent && isPlaying);
+    const btn = tr.querySelector('.card-play-btn');
+    if (btn) btn.textContent = (isCurrent && isPlaying) ? 'Playing' : 'Play';
+  });
+}
+
+/* ---------- library rendering ---------- */
 function renderGrid(list){
   const grid = document.getElementById('gridView');
   if (!list.length){
@@ -584,93 +1014,26 @@ function renderGrid(list){
   }
   grid.innerHTML = "";
   list.forEach(song => {
+    const gidx = SONGS.indexOf(song);
     const card = document.createElement('div');
     card.className = "card";
+    card.dataset.gidx = gidx;
     const moodChips = song.mood.map(m => `<span class="pill pill-mood" style="--mood-c:${MOOD_COLORS[m]}">${m}</span>`).join("");
     card.innerHTML = `
       <div class="card-duration">${song.dur}</div>
-      <div class="card-name"><span class="play-ic">${ICON_NOTE}</span>${song.name}</div>
+      <div class="card-name">${song.name} <span class="mini-eq" style="display:none;">${EQ_HTML}</span></div>
       <div class="card-meta"><b>Created by:</b> ${song.performer}</div>
       <div class="card-notes">${song.notes}</div>
       <div class="card-chips">${moodChips}<span class="pill pill-occasion">${song.occasion}</span></div>
       <div class="player-row">
-        <button class="play-btn" type="button" aria-label="Play ${song.name}">${ICON_PLAY}</button>
-        <div class="progress-wrap">
-          <div class="progress-track"><div class="progress-fill"></div></div>
-          <div class="time-label">0:00 / ${song.dur}</div>
-        </div>
+        <button class="card-play-btn" type="button" aria-label="Play ${song.name}">Play</button>
         <a class="download-link" href="${song.url}" download title="Download ${song.name}" aria-label="Download ${song.name}">${ICON_DOWNLOAD}</a>
-        <audio preload="none" style="display:none">
-          <source src="${song.url}" type="audio/mpeg">
-        </audio>
       </div>
     `;
+    card.querySelector('.card-play-btn').addEventListener('click', () => playFromLibrary(gidx));
     grid.appendChild(card);
-    wirePlayer(card, song);
   });
-}
-
-function formatTime(sec){
-  if (!isFinite(sec) || sec < 0) sec = 0;
-  const m = Math.floor(sec / 60);
-  const s = Math.floor(sec % 60);
-  return `${m}:${s < 10 ? "0" : ""}${s}`;
-}
-
-function pauseAllExcept(exceptAudio){
-  document.querySelectorAll('.player-row audio').forEach(a => {
-    if (a !== exceptAudio && !a.paused) a.pause();
-  });
-}
-
-function wirePlayer(card, song){
-  const audio = card.querySelector('.player-row audio');
-  const btn = card.querySelector('.play-btn');
-  const track = card.querySelector('.progress-track');
-  const fill = card.querySelector('.progress-fill');
-  const timeLabel = card.querySelector('.time-label');
-
-  btn.addEventListener('click', () => {
-    if (audio.paused){
-      pauseAllExcept(audio);
-      audio.play();
-    } else {
-      audio.pause();
-    }
-  });
-
-  audio.addEventListener('play', () => {
-    btn.innerHTML = ICON_PAUSE;
-    btn.classList.add('is-playing');
-    btn.setAttribute('aria-label', `Pause ${song.name}`);
-  });
-  audio.addEventListener('pause', () => {
-    btn.innerHTML = ICON_PLAY;
-    btn.classList.remove('is-playing');
-    btn.setAttribute('aria-label', `Play ${song.name}`);
-  });
-  audio.addEventListener('ended', () => {
-    fill.style.width = "0%";
-    track.style.setProperty('--progress', "0%");
-    timeLabel.textContent = `0:00 / ${song.dur}`;
-  });
-  audio.addEventListener('timeupdate', () => {
-    const pct = audio.duration ? (audio.currentTime / audio.duration) * 100 : 0;
-    fill.style.width = pct + "%";
-    track.style.setProperty('--progress', pct + "%");
-    timeLabel.textContent = `${formatTime(audio.currentTime)} / ${audio.duration ? formatTime(audio.duration) : song.dur}`;
-  });
-  audio.addEventListener('loadedmetadata', () => {
-    timeLabel.textContent = `0:00 / ${formatTime(audio.duration)}`;
-  });
-
-  track.addEventListener('click', (e) => {
-    const rect = track.getBoundingClientRect();
-    const pct = Math.min(Math.max((e.clientX - rect.left) / rect.width, 0), 1);
-    if (audio.duration){
-      audio.currentTime = pct * audio.duration;
-    }
-  });
+  syncLibraryHighlights();
 }
 
 function renderTable(list){
@@ -681,17 +1044,21 @@ function renderTable(list){
   }
   body.innerHTML = "";
   list.forEach(song => {
+    const gidx = SONGS.indexOf(song);
     const tr = document.createElement('tr');
+    tr.dataset.gidx = gidx;
     const moodHtml = song.mood.map(m => `<span class="pill pill-mood" style="--mood-c:${MOOD_COLORS[m]}">${m}</span>`).join("");
     tr.innerHTML = `
       <td>${song.dur}</td>
-      <td>${song.name}<br><audio controls preload="none" style="width:190px; height:30px; margin-top:4px;"><source src="${song.url}" type="audio/mpeg"></audio> <a class="download-link" style="width:26px;height:26px;vertical-align:middle;" href="${song.url}" download title="Download ${song.name}" aria-label="Download ${song.name}">${ICON_DOWNLOAD}</a></td>
+      <td>${song.name}<br><button class="card-play-btn" type="button" style="margin-top:4px;">Play</button> <a class="download-link" style="width:26px;height:26px;vertical-align:middle;" href="${song.url}" download title="Download ${song.name}" aria-label="Download ${song.name}">${ICON_DOWNLOAD}</a></td>
       <td>${song.performer}</td>
       <td><div class="table-chip-cell">${moodHtml}</div></td>
       <td>${song.occasion}</td>
     `;
+    tr.querySelector('.card-play-btn').addEventListener('click', () => playFromLibrary(gidx));
     body.appendChild(tr);
   });
+  syncLibraryHighlights();
 }
 
 function renderAll(){
@@ -719,7 +1086,9 @@ document.getElementById('tableBtn').addEventListener('click', () => {
 });
 
 renderAll();
+loadTrack(0, false); // preload first track's info into Jukebox/mini-player without playing
 </script>
+
 
 </body>
 </html>
