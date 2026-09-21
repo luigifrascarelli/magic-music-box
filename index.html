@@ -134,6 +134,7 @@
     gap:16px;
     flex:1;
     min-width:220px;
+    cursor:pointer;
   }
   .header-controls{
     display:flex;
@@ -395,6 +396,50 @@
     .header-controls{ width:100%; justify-content:space-between; }
   }
 
+  /* ---------- home tiles ---------- */
+  .home-tiles{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:20px;
+    margin-top:10px;
+  }
+  .home-tile{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    text-align:center;
+    gap:14px;
+    padding:36px 24px;
+    border-radius:22px;
+    border:2px solid transparent;
+    background:
+      linear-gradient(160deg, var(--panel-2), var(--panel)) padding-box,
+      linear-gradient(135deg, #ff2fd6, #b967ff, #33d9ff) border-box;
+    cursor:pointer;
+    transition:transform 0.15s ease, box-shadow 0.2s ease, filter 0.2s ease;
+  }
+  .home-tile:hover{
+    transform:translateY(-4px);
+    filter:brightness(1.1);
+    box-shadow:0 14px 34px rgba(255,47,214,0.3);
+  }
+  .home-tile svg{ width:100%; max-width:180px; height:auto; }
+  .home-tile-title{
+    font-family:'Audiowide', sans-serif;
+    font-weight:400;
+    font-size:19px;
+    background:linear-gradient(90deg, #ff2fd6 0%, #b967ff 50%, #33d9ff 100%);
+    -webkit-background-clip:text;
+    background-clip:text;
+    color:transparent;
+  }
+  .home-tile-sub{ font-size:13px; color:var(--text-2); }
+
+  @media (max-width:640px){
+    .home-tiles{ grid-template-columns:1fr; }
+    .home-tile{ padding:28px 20px; }
+  }
+
   /* ---------- nav pill ---------- */
   .nav-pill{
     flex-shrink:0;
@@ -610,7 +655,7 @@
 <div class="page">
 
   <header>
-    <div class="header-brand">
+    <div class="header-brand" id="headerBrand">
       <svg class="logo" viewBox="0 0 64 44" fill="none" xmlns="http://www.w3.org/2000/svg">
         <defs>
           <linearGradient id="logoGrad" x1="0" y1="0" x2="64" y2="44" gradientUnits="userSpaceOnUse">
@@ -636,15 +681,65 @@
       </div>
     </div>
     <div class="header-controls">
-      <div class="nav-pill">
-        <button class="nav-pill-btn active" id="navLibrary" type="button">Library</button>
+      <div class="nav-pill" id="navPill" style="display:none;">
+        <button class="nav-pill-btn" id="navLibrary" type="button">Library</button>
         <button class="nav-pill-btn" id="navJukebox" type="button">Jukebox</button>
       </div>
       <button class="theme-toggle" id="themeToggle" type="button" aria-label="Switch to light theme"></button>
     </div>
   </header>
 
-  <div id="libraryView">
+  <div id="homeView">
+    <div class="home-tiles">
+      <button class="home-tile" id="tileJukebox" type="button">
+        <svg viewBox="0 0 120 84" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="tileJbGrad" x1="0" y1="0" x2="120" y2="84" gradientUnits="userSpaceOnUse">
+              <stop offset="0%" stop-color="#ff2fd6"/>
+              <stop offset="50%" stop-color="#b967ff"/>
+              <stop offset="100%" stop-color="#33d9ff"/>
+            </linearGradient>
+          </defs>
+          <rect x="3" y="3" width="114" height="78" rx="12" fill="none" stroke="url(#tileJbGrad)" stroke-width="3.5"/>
+          <rect x="20" y="12" width="80" height="18" rx="5" fill="none" stroke="url(#tileJbGrad)" stroke-width="2.5"/>
+          <line x1="28" y1="19" x2="64" y2="19" stroke="url(#tileJbGrad)" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="28" y1="25" x2="50" y2="25" stroke="url(#tileJbGrad)" stroke-width="2.5" stroke-linecap="round"/>
+          <circle cx="36" cy="56" r="17" fill="none" stroke="url(#tileJbGrad)" stroke-width="2.5"/>
+          <circle cx="36" cy="56" r="5" fill="none" stroke="url(#tileJbGrad)" stroke-width="2.5"/>
+          <circle cx="84" cy="56" r="17" fill="none" stroke="url(#tileJbGrad)" stroke-width="2.5"/>
+          <circle cx="84" cy="56" r="5" fill="none" stroke="url(#tileJbGrad)" stroke-width="2.5"/>
+          <rect x="52" y="50" width="16" height="12" rx="3" fill="none" stroke="url(#tileJbGrad)" stroke-width="2.5"/>
+        </svg>
+        <div class="home-tile-title">Jukebox</div>
+        <div class="home-tile-sub">Continuous play, shuffle &amp; repeat</div>
+      </button>
+
+      <button class="home-tile" id="tileLibrary" type="button">
+        <svg viewBox="0 0 120 84" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="tileLibGrad" x1="0" y1="0" x2="120" y2="84" gradientUnits="userSpaceOnUse">
+              <stop offset="0%" stop-color="#ff2fd6"/>
+              <stop offset="50%" stop-color="#b967ff"/>
+              <stop offset="100%" stop-color="#33d9ff"/>
+            </linearGradient>
+          </defs>
+          <rect x="10" y="14" width="34" height="56" rx="6" fill="none" stroke="url(#tileLibGrad)" stroke-width="3"/>
+          <rect x="43" y="8" width="34" height="62" rx="6" fill="none" stroke="url(#tileLibGrad)" stroke-width="3"/>
+          <rect x="76" y="18" width="34" height="52" rx="6" fill="none" stroke="url(#tileLibGrad)" stroke-width="3"/>
+          <line x1="17" y1="26" x2="37" y2="26" stroke="url(#tileLibGrad)" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="17" y1="34" x2="31" y2="34" stroke="url(#tileLibGrad)" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="50" y1="20" x2="70" y2="20" stroke="url(#tileLibGrad)" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="50" y1="28" x2="64" y2="28" stroke="url(#tileLibGrad)" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="83" y1="30" x2="103" y2="30" stroke="url(#tileLibGrad)" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="83" y1="38" x2="97" y2="38" stroke="url(#tileLibGrad)" stroke-width="2.5" stroke-linecap="round"/>
+        </svg>
+        <div class="home-tile-title">Library</div>
+        <div class="home-tile-sub">Browse, filter, and play any song</div>
+      </button>
+    </div>
+  </div>
+
+  <div id="libraryView" style="display:none;">
 
   <div class="callout">
     Free to listen and share. New songs get added as we learn them — check back throughout the year! Right-click any "Listen" button to save the file.
@@ -811,21 +906,27 @@ themeToggleBtn.addEventListener('click', () => {
   applyTheme(current === 'light' ? 'dark' : 'light');
 });
 
-/* ---------- tab switching (Library / Jukebox) ---------- */
+/* ---------- view switching (Home / Library / Jukebox) ---------- */
 const navLibrary = document.getElementById('navLibrary');
 const navJukebox = document.getElementById('navJukebox');
+const navPill = document.getElementById('navPill');
+const homeView = document.getElementById('homeView');
 const libraryView = document.getElementById('libraryView');
 const jukeboxView = document.getElementById('jukeboxView');
 
 function switchTab(tab){
-  const isLibrary = tab === 'library';
-  libraryView.style.display = isLibrary ? '' : 'none';
-  jukeboxView.style.display = isLibrary ? 'none' : '';
-  navLibrary.classList.toggle('active', isLibrary);
-  navJukebox.classList.toggle('active', !isLibrary);
+  homeView.style.display = tab === 'home' ? '' : 'none';
+  libraryView.style.display = tab === 'library' ? '' : 'none';
+  jukeboxView.style.display = tab === 'jukebox' ? '' : 'none';
+  navPill.style.display = tab === 'home' ? 'none' : 'inline-flex';
+  navLibrary.classList.toggle('active', tab === 'library');
+  navJukebox.classList.toggle('active', tab === 'jukebox');
 }
 navLibrary.addEventListener('click', () => switchTab('library'));
 navJukebox.addEventListener('click', () => switchTab('jukebox'));
+document.getElementById('tileLibrary').addEventListener('click', () => switchTab('library'));
+document.getElementById('tileJukebox').addEventListener('click', () => switchTab('jukebox'));
+document.getElementById('headerBrand').addEventListener('click', () => switchTab('home'));
 
 /* ---------- library filtering state ---------- */
 const state = {
