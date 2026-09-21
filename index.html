@@ -899,6 +899,7 @@
       </button>
       <h2>Build Your Playlist</h2>
     </div>
+    <div class="cat-tabs" id="builderCatTabs"></div>
     <div class="builder-actions">
       <button class="builder-quick-btn" id="selectAllBtn" type="button">Select All</button>
       <button class="builder-quick-btn" id="clearAllBtn" type="button">Clear All</button>
@@ -1134,13 +1135,27 @@ repeatBtn.addEventListener('click', () => {
 
 /* ---------- playlist builder ---------- */
 let builderWorkingSet = new Set();
+let builderCategory = "all";
 
 function openBuilder(){
   builderWorkingSet = new Set(player.selected);
+  builderCategory = "all";
   renderBuilder();
   switchTab('builder');
 }
 document.getElementById('openBuilderBtn').addEventListener('click', openBuilder);
+
+function renderBuilderCatTabs(){
+  const wrap = document.getElementById('builderCatTabs');
+  wrap.innerHTML = "";
+  CATEGORIES.forEach(cat => {
+    const btn = document.createElement('button');
+    btn.className = "cat-tab" + (builderCategory === cat.key ? " active" : "");
+    btn.textContent = cat.label;
+    btn.addEventListener('click', () => { builderCategory = cat.key; renderBuilder(); });
+    wrap.appendChild(btn);
+  });
+}
 
 function updateBuilderCount(){
   const n = builderWorkingSet.size;
@@ -1149,30 +1164,38 @@ function updateBuilderCount(){
 }
 
 function renderBuilder(){
+  renderBuilderCatTabs();
   const list = document.getElementById('builderList');
+  const filtered = builderCategory === "all" ? SONGS : SONGS.filter(s => s.category.includes(builderCategory));
   list.innerHTML = "";
-  SONGS.forEach((song, gidx) => {
-    const checked = builderWorkingSet.has(gidx);
-    const item = document.createElement('label');
-    item.className = "builder-item" + (checked ? "" : " unchecked");
-    item.innerHTML = `
-      <input type="checkbox" ${checked ? "checked" : ""}>
-      <div class="builder-info">
-        <div class="builder-name">${song.name}</div>
-        <div class="builder-sub">${song.performer} · ${song.dur}</div>
-      </div>
-    `;
-    item.querySelector('input').addEventListener('change', (e) => {
-      if (e.target.checked) builderWorkingSet.add(gidx); else builderWorkingSet.delete(gidx);
-      item.classList.toggle('unchecked', !e.target.checked);
-      updateBuilderCount();
+  if (!filtered.length){
+    list.innerHTML = '<div class="empty-state">No songs in this category.</div>';
+  } else {
+    filtered.forEach(song => {
+      const gidx = SONGS.indexOf(song);
+      const checked = builderWorkingSet.has(gidx);
+      const item = document.createElement('label');
+      item.className = "builder-item" + (checked ? "" : " unchecked");
+      item.innerHTML = `
+        <input type="checkbox" ${checked ? "checked" : ""}>
+        <div class="builder-info">
+          <div class="builder-name">${song.name}</div>
+          <div class="builder-sub">${song.performer} · ${song.dur}</div>
+        </div>
+      `;
+      item.querySelector('input').addEventListener('change', (e) => {
+        if (e.target.checked) builderWorkingSet.add(gidx); else builderWorkingSet.delete(gidx);
+        item.classList.toggle('unchecked', !e.target.checked);
+        updateBuilderCount();
+      });
+      list.appendChild(item);
     });
-    list.appendChild(item);
-  });
+  }
   updateBuilderCount();
 }
 
 document.getElementById('selectAllBtn').addEventListener('click', () => {
+  // "Select All" applies to every song in the library, not just the current filtered view.
   builderWorkingSet = new Set(SONGS.map((_, i) => i));
   renderBuilder();
 });
