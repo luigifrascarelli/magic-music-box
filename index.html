@@ -1041,13 +1041,29 @@ function switchTab(tab){
   navBonus.classList.toggle('active', tab === 'bonus');
 }
 navLibrary.addEventListener('click', () => switchTab('library'));
-navJukebox.addEventListener('click', () => switchTab('jukebox'));
+navJukebox.addEventListener('click', goToJukebox);
 navBonus.addEventListener('click', () => switchTab('bonus'));
 document.getElementById('tileLibrary').addEventListener('click', () => switchTab('library'));
-document.getElementById('tileJukebox').addEventListener('click', () => switchTab('jukebox'));
+document.getElementById('tileJukebox').addEventListener('click', goToJukebox);
 document.getElementById('tileBonus').addEventListener('click', () => switchTab('bonus'));
 document.getElementById('bonusBackBtn').addEventListener('click', () => switchTab('home'));
 document.getElementById('headerBrand').addEventListener('click', () => switchTab('home'));
+
+// Entering the Jukebox tab always shows the main library queue (newest first),
+// not a leftover Bonus Tracks queue — unless something is actively playing,
+// in which case we don't interrupt it.
+function goToJukebox(){
+  const isPlaying = player.started && !audio.paused;
+  if (!isPlaying){
+    player.activePool = 'main';
+    const cur = currentGidx();
+    player.order = player.shuffle ? shuffleOrder() : poolOrder();
+    const newIdx = player.order.indexOf(cur);
+    player.index = newIdx !== -1 ? newIdx : 0;
+    refreshNowPlayingUI();
+  }
+  switchTab('jukebox');
+}
 
 /* ---------- library filtering state ---------- */
 const state = {
