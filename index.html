@@ -399,11 +399,12 @@
   /* ---------- home tiles ---------- */
   .home-tiles{
     display:grid;
-    grid-template-columns:1fr 1fr;
+    grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));
     gap:20px;
     margin-top:10px;
   }
   .home-tile{
+    position:relative;
     display:flex;
     flex-direction:column;
     align-items:center;
@@ -417,6 +418,20 @@
       linear-gradient(135deg, #ff2fd6, #b967ff, #33d9ff) border-box;
     cursor:pointer;
     transition:transform 0.15s ease, box-shadow 0.2s ease, filter 0.2s ease;
+  }
+  .home-tile-badge{
+    position:absolute;
+    top:14px;
+    left:14px;
+    padding:3px 11px;
+    border-radius:999px;
+    background:linear-gradient(135deg,#ff2fd6,#33d9ff);
+    color:#fff;
+    font-size:10px;
+    font-weight:800;
+    letter-spacing:0.07em;
+    text-transform:uppercase;
+    box-shadow:0 0 12px rgba(255,47,214,0.6);
   }
   .home-tile:hover{
     transform:translateY(-4px);
@@ -725,6 +740,7 @@
       <div class="nav-pill" id="navPill" style="display:none;">
         <button class="nav-pill-btn" id="navLibrary" type="button">Library</button>
         <button class="nav-pill-btn" id="navJukebox" type="button">Jukebox</button>
+        <button class="nav-pill-btn" id="navBonus" type="button">Bonus</button>
       </div>
       <button class="theme-toggle" id="themeToggle" type="button" aria-label="Switch to light theme"></button>
     </div>
@@ -777,7 +793,42 @@
         <div class="home-tile-title">Library</div>
         <div class="home-tile-sub">Browse, filter, and play any song</div>
       </button>
+
+      <button class="home-tile" id="tileBonus" type="button">
+        <span class="home-tile-badge">New</span>
+        <svg viewBox="0 0 120 84" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="tileBonusGrad" x1="0" y1="0" x2="120" y2="84" gradientUnits="userSpaceOnUse">
+              <stop offset="0%" stop-color="#ff2fd6"/>
+              <stop offset="50%" stop-color="#b967ff"/>
+              <stop offset="100%" stop-color="#33d9ff"/>
+            </linearGradient>
+          </defs>
+          <rect x="15" y="32" width="90" height="42" rx="6" fill="none" stroke="url(#tileBonusGrad)" stroke-width="3.5"/>
+          <rect x="9" y="18" width="102" height="18" rx="5" fill="none" stroke="url(#tileBonusGrad)" stroke-width="3.5"/>
+          <line x1="60" y1="18" x2="60" y2="74" stroke="url(#tileBonusGrad)" stroke-width="3" stroke-linecap="round"/>
+          <path d="M60 18c0-9-8-14-15-11-6 3-4 11 4 11z" fill="none" stroke="url(#tileBonusGrad)" stroke-width="3" stroke-linejoin="round"/>
+          <path d="M60 18c0-9 8-14 15-11 6 3 4 11-4 11z" fill="none" stroke="url(#tileBonusGrad)" stroke-width="3" stroke-linejoin="round"/>
+        </svg>
+        <div class="home-tile-title">Bonus Tracks</div>
+        <div class="home-tile-sub">Special collections &amp; seasonal songs</div>
+      </button>
     </div>
+  </div>
+
+  <div id="bonusView" style="display:none;">
+    <div class="builder-header">
+      <button class="builder-back" id="bonusBackBtn" type="button" aria-label="Back to home">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <h2>Bonus Tracks</h2>
+    </div>
+    <div class="callout">
+      Special collections and seasonal songs live here — separate from the main Library and Jukebox.
+    </div>
+    <button class="builder-start-btn" id="bonusPlayAllBtn" type="button" style="display:none; margin-bottom:20px;">Play All — Bonus Jukebox</button>
+    <div id="bonusGrid" class="grid" style="display:none;"></div>
+    <div class="empty-state" id="bonusEmpty">No bonus songs yet — check back soon! First up: a Halloween album.</div>
   </div>
 
   <div id="libraryView" style="display:none;">
@@ -970,25 +1021,32 @@ themeToggleBtn.addEventListener('click', () => {
 /* ---------- view switching (Home / Library / Jukebox) ---------- */
 const navLibrary = document.getElementById('navLibrary');
 const navJukebox = document.getElementById('navJukebox');
+const navBonus = document.getElementById('navBonus');
 const navPill = document.getElementById('navPill');
 const homeView = document.getElementById('homeView');
 const libraryView = document.getElementById('libraryView');
 const jukeboxView = document.getElementById('jukeboxView');
 const builderView = document.getElementById('builderView');
+const bonusView = document.getElementById('bonusView');
 
 function switchTab(tab){
   homeView.style.display = tab === 'home' ? '' : 'none';
   libraryView.style.display = tab === 'library' ? '' : 'none';
   jukeboxView.style.display = tab === 'jukebox' ? '' : 'none';
   builderView.style.display = tab === 'builder' ? '' : 'none';
+  bonusView.style.display = tab === 'bonus' ? '' : 'none';
   navPill.style.display = (tab === 'home' || tab === 'builder') ? 'none' : 'inline-flex';
   navLibrary.classList.toggle('active', tab === 'library');
   navJukebox.classList.toggle('active', tab === 'jukebox');
+  navBonus.classList.toggle('active', tab === 'bonus');
 }
 navLibrary.addEventListener('click', () => switchTab('library'));
 navJukebox.addEventListener('click', () => switchTab('jukebox'));
+navBonus.addEventListener('click', () => switchTab('bonus'));
 document.getElementById('tileLibrary').addEventListener('click', () => switchTab('library'));
 document.getElementById('tileJukebox').addEventListener('click', () => switchTab('jukebox'));
+document.getElementById('tileBonus').addEventListener('click', () => switchTab('bonus'));
+document.getElementById('bonusBackBtn').addEventListener('click', () => switchTab('home'));
 document.getElementById('headerBrand').addEventListener('click', () => switchTab('home'));
 
 /* ---------- library filtering state ---------- */
@@ -1010,7 +1068,8 @@ function renderCatTabs(){
 }
 
 function getFiltered(){
-  return state.activeCategory === "all" ? SONGS : SONGS.filter(s => s.category.includes(state.activeCategory));
+  const base = SONGS.filter(s => !s.bonus);
+  return state.activeCategory === "all" ? base : base.filter(s => s.category.includes(state.activeCategory));
 }
 
 function formatTime(sec){
@@ -1026,16 +1085,25 @@ function formatTime(sec){
    continues uninterrupted as you switch views.
    ============================================================ */
 const audio = document.getElementById('globalAudio');
+const mainGidx = SONGS.map((_, i) => i).filter(i => !SONGS[i].bonus);
 const player = {
   index: 0,
-  order: SONGS.map((_, i) => i),
-  selected: new Set(SONGS.map((_, i) => i)), // which songs are in the active queue pool
+  order: mainGidx.slice().reverse(), // newest-added song plays first
+  selected: new Set(mainGidx), // which non-bonus songs are in the main queue pool
+  activePool: 'main', // 'main' or 'bonus' — decides what shuffle/order rebuilds rebuild from
   shuffle: false,
   repeat: false,
   started: false
 };
 
-function selectedOrder(){ return SONGS.map((_, i) => i).filter(i => player.selected.has(i)); }
+function getBonusGidx(){ return SONGS.map((_, i) => i).filter(i => SONGS[i].bonus); }
+
+// Builds the play order for whichever pool (main library selection, or bonus tracks)
+// is currently active, newest-added first.
+function poolOrder(){
+  const poolSet = player.activePool === 'bonus' ? new Set(getBonusGidx()) : player.selected;
+  return SONGS.map((_, i) => i).filter(i => poolSet.has(i)).reverse();
+}
 
 function currentSong(){ return SONGS[player.order[player.index]]; }
 function currentGidx(){ return player.order[player.index]; }
@@ -1053,11 +1121,13 @@ function loadTrack(newIndex, autoplay){
 }
 
 function playFromLibrary(gidx){
-  if (!player.selected.has(gidx)){
-    // Playing a song that's outside the current custom queue re-includes it.
+  const isBonus = !!SONGS[gidx].bonus;
+  player.activePool = isBonus ? 'bonus' : 'main';
+  if (!isBonus && !player.selected.has(gidx)){
+    // Playing a main-library song that's outside the current custom queue re-includes it.
     player.selected.add(gidx);
-    player.order = player.shuffle ? shuffleOrder() : selectedOrder();
   }
+  player.order = player.shuffle ? shuffleOrder() : poolOrder();
   loadTrack(player.order.indexOf(gidx), true);
 }
 
@@ -1111,7 +1181,7 @@ document.getElementById('miniInfo').addEventListener('click', () => switchTab('j
 document.getElementById('miniExpandBtn').addEventListener('click', () => switchTab('jukebox'));
 
 function shuffleOrder(){
-  const order = selectedOrder();
+  const order = poolOrder();
   for (let i = order.length - 1; i > 0; i--){
     const j = Math.floor(Math.random() * (i + 1));
     [order[i], order[j]] = [order[j], order[i]];
@@ -1123,7 +1193,7 @@ shuffleBtn.addEventListener('click', () => {
   player.shuffle = !player.shuffle;
   shuffleBtn.classList.toggle('active', player.shuffle);
   const current = currentGidx();
-  player.order = player.shuffle ? shuffleOrder() : selectedOrder();
+  player.order = player.shuffle ? shuffleOrder() : poolOrder();
   player.index = player.order.indexOf(current);
   renderQueue();
 });
@@ -1166,7 +1236,8 @@ function updateBuilderCount(){
 function renderBuilder(){
   renderBuilderCatTabs();
   const list = document.getElementById('builderList');
-  const filtered = builderCategory === "all" ? SONGS : SONGS.filter(s => s.category.includes(builderCategory));
+  const base = SONGS.filter(s => !s.bonus);
+  const filtered = (builderCategory === "all" ? base : base.filter(s => s.category.includes(builderCategory))).slice().reverse();
   list.innerHTML = "";
   if (!filtered.length){
     list.innerHTML = '<div class="empty-state">No songs in this category.</div>';
@@ -1195,8 +1266,8 @@ function renderBuilder(){
 }
 
 document.getElementById('selectAllBtn').addEventListener('click', () => {
-  // "Select All" applies to every song in the library, not just the current filtered view.
-  builderWorkingSet = new Set(SONGS.map((_, i) => i));
+  // "Select All" applies to every non-bonus song, not just the current filtered view.
+  builderWorkingSet = new Set(mainGidx);
   renderBuilder();
 });
 document.getElementById('clearAllBtn').addEventListener('click', () => {
@@ -1207,7 +1278,8 @@ document.getElementById('builderBackBtn').addEventListener('click', () => switch
 document.getElementById('startJukeboxBtn').addEventListener('click', () => {
   if (!builderWorkingSet.size) return;
   player.selected = new Set(builderWorkingSet);
-  player.order = player.shuffle ? shuffleOrder() : selectedOrder();
+  player.activePool = 'main';
+  player.order = player.shuffle ? shuffleOrder() : poolOrder();
   loadTrack(0, true);
   switchTab('jukebox');
 });
@@ -1258,7 +1330,7 @@ function renderQueue(){
 function syncLibraryHighlights(){
   const gidx = currentGidx();
   const isPlaying = player.started && !audio.paused;
-  document.querySelectorAll('#gridView .card').forEach(card => {
+  document.querySelectorAll('#gridView .card, #bonusGrid .card').forEach(card => {
     const isCurrent = parseInt(card.dataset.gidx, 10) === gidx;
     card.classList.toggle('playing', isCurrent && isPlaying);
     const btn = card.querySelector('.card-play-btn');
@@ -1273,6 +1345,52 @@ function syncLibraryHighlights(){
     if (btn) btn.textContent = (isCurrent && isPlaying) ? 'Playing' : 'Play';
   });
 }
+
+/* ---------- bonus tracks rendering ---------- */
+function renderBonusView(){
+  const bonusSongs = SONGS.filter(s => s.bonus).slice().reverse();
+  const grid = document.getElementById('bonusGrid');
+  const playAllBtn = document.getElementById('bonusPlayAllBtn');
+  const empty = document.getElementById('bonusEmpty');
+
+  if (!bonusSongs.length){
+    grid.style.display = 'none';
+    playAllBtn.style.display = 'none';
+    empty.style.display = '';
+    return;
+  }
+  empty.style.display = 'none';
+  playAllBtn.style.display = '';
+  grid.style.display = 'grid';
+  grid.innerHTML = "";
+  bonusSongs.forEach(song => {
+    const gidx = SONGS.indexOf(song);
+    const card = document.createElement('div');
+    card.className = "card";
+    card.dataset.gidx = gidx;
+    const moodChips = song.mood.map(m => `<span class="pill pill-mood" style="--mood-c:${MOOD_COLORS[m]}">${m}</span>`).join("");
+    card.innerHTML = `
+      <div class="card-duration">${song.dur}</div>
+      <div class="card-name">${song.name} <span class="mini-eq" style="display:none;">${EQ_HTML}</span></div>
+      <div class="card-meta"><b>Created by:</b> ${song.performer}</div>
+      <div class="card-notes">${song.notes}</div>
+      <div class="card-chips">${moodChips}${song.occasion ? `<span class="pill pill-occasion">${song.occasion}</span>` : ""}</div>
+      <div class="player-row">
+        <button class="card-play-btn" type="button" aria-label="Play ${song.name}">Play</button>
+        <a class="download-link" href="${song.url}" download title="Download ${song.name}" aria-label="Download ${song.name}">${ICON_DOWNLOAD}</a>
+      </div>
+    `;
+    card.querySelector('.card-play-btn').addEventListener('click', () => playFromLibrary(gidx));
+    grid.appendChild(card);
+  });
+  syncLibraryHighlights();
+}
+
+document.getElementById('bonusPlayAllBtn').addEventListener('click', () => {
+  player.activePool = 'bonus';
+  player.order = player.shuffle ? shuffleOrder() : poolOrder();
+  loadTrack(0, true);
+});
 
 /* ---------- library rendering ---------- */
 function renderGrid(list){
@@ -1355,6 +1473,7 @@ document.getElementById('tableBtn').addEventListener('click', () => {
 });
 
 renderAll();
+renderBonusView();
 loadTrack(0, false); // preload first track's info into Jukebox/mini-player without playing
 </script>
 
