@@ -559,9 +559,43 @@
     display:flex; align-items:center; gap:14px;
     padding:12px 16px; border-radius:14px;
     background:var(--panel); border:1px solid var(--border);
-    cursor:pointer; transition:border-color 0.15s ease, transform 0.15s ease;
+    cursor:pointer; transition:border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
   }
   .queue-item:hover{ border-color:rgba(255,47,214,0.4); transform:translateX(2px); }
+  .queue-item.dragging{
+    opacity:0.9;
+    box-shadow:0 10px 26px rgba(0,0,0,0.45);
+    z-index:5;
+    position:relative;
+    transition:none;
+  }
+  .queue-item.drop-before{ box-shadow:inset 0 3px 0 0 #ff2fd6; }
+  .queue-item.drop-after{ box-shadow:inset 0 -3px 0 0 #ff2fd6; }
+  .queue-drag-handle{
+    flex-shrink:0;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    width:22px;
+    color:var(--text-2);
+    cursor:grab;
+    touch-action:none;
+  }
+  .queue-drag-handle:hover{ color:var(--text-0); }
+  .queue-reorder-btns{
+    flex-shrink:0;
+    display:flex;
+    flex-direction:column;
+    gap:2px;
+  }
+  .queue-reorder-btn{
+    width:22px; height:18px;
+    display:flex; align-items:center; justify-content:center;
+    border:none; background:none; color:var(--text-2); cursor:pointer; padding:0; border-radius:4px;
+  }
+  .queue-reorder-btn:hover{ color:var(--text-0); background:rgba(255,47,214,0.1); }
+  .queue-reorder-btn:disabled{ opacity:0.25; cursor:default; }
+  .queue-reorder-btn:disabled:hover{ background:none; color:var(--text-2); }
   .queue-item.current{
     border-color:#ff2fd6;
     background:linear-gradient(90deg, rgba(255,47,214,0.12), rgba(51,217,255,0.08));
@@ -1015,6 +1049,10 @@ const ICON_MOON = `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" x
 
 const ICON_PLAY_PATH = `<path d="M6 4.5v15l13-7.5-13-7.5z"/>`;
 const ICON_PAUSE_PATH = `<rect x="5" y="4" width="5" height="16" rx="1.5"/><rect x="14" y="4" width="5" height="16" rx="1.5"/>`;
+
+const ICON_GRIP = `<svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><circle cx="8" cy="6" r="1.7"/><circle cx="8" cy="12" r="1.7"/><circle cx="8" cy="18" r="1.7"/><circle cx="16" cy="6" r="1.7"/><circle cx="16" cy="12" r="1.7"/><circle cx="16" cy="18" r="1.7"/></svg>`;
+const ICON_ARROW_UP = `<svg viewBox="0 0 24 24" width="12" height="12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 15l6-6 6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+const ICON_ARROW_DOWN = `<svg viewBox="0 0 24 24" width="12" height="12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 const EQ_HTML = `<span></span><span></span><span></span>`;
 
 /* ---------- theme toggle ---------- */
@@ -1350,7 +1388,9 @@ function renderQueue(){
     const isCurrent = pos === player.index;
     const item = document.createElement('div');
     item.className = "queue-item" + (isCurrent ? " current" : "");
+    item.dataset.pos = pos;
     item.innerHTML = `
+      <span class="queue-drag-handle" aria-label="Drag to reorder">${ICON_GRIP}</span>
       <div class="queue-index">${pos + 1}</div>
       <div class="queue-eq">${EQ_HTML}</div>
       <div class="queue-info">
@@ -1358,10 +1398,102 @@ function renderQueue(){
         <div class="queue-sub">${song.performer}</div>
       </div>
       <div class="queue-dur">${song.dur}</div>
+      <div class="queue-reorder-btns">
+        <button class="queue-reorder-btn" type="button" aria-label="Move up" ${pos === 0 ? "disabled" : ""}>${ICON_ARROW_UP}</button>
+        <button class="queue-reorder-btn" type="button" aria-label="Move down" ${pos === player.order.length - 1 ? "disabled" : ""}>${ICON_ARROW_DOWN}</button>
+      </div>
     `;
-    item.addEventListener('click', () => loadTrack(pos, true));
+    item.addEventListener('click', (e) => {
+      if (e.target.closest('.queue-drag-handle, .queue-reorder-btn')) return;
+      loadTrack(pos, true);
+    });
+    item.querySelector('.queue-drag-handle').addEventListener('pointerdown', (e) => onHandlePointerDown(e, item));
+    const [upBtn, downBtn] = item.querySelectorAll('.queue-reorder-btn');
+    upBtn.addEventListener('click', (e) => { e.stopPropagation(); moveQueueItemBy(pos, -1); });
+    downBtn.addEventListener('click', (e) => { e.stopPropagation(); moveQueueItemBy(pos, 1); });
     list.appendChild(item);
   });
+}
+
+/* ---------- queue reordering: drag handle (Pointer Events) + up/down buttons ---------- */
+let dragState = null;
+
+function onHandlePointerDown(e, itemEl){
+  e.preventDefault();
+  e.stopPropagation();
+  dragState = {
+    fromPos: parseInt(itemEl.dataset.pos, 10),
+    itemEl,
+    startY: e.clientY,
+    dropAtEnd: false,
+    targetBeforePos: null
+  };
+  itemEl.classList.add('dragging');
+  itemEl.setPointerCapture(e.pointerId);
+  document.addEventListener('pointermove', onDragPointerMove);
+  document.addEventListener('pointerup', onDragPointerUp);
+}
+
+function clearDropIndicators(){
+  document.querySelectorAll('#queueList .queue-item').forEach(el => el.classList.remove('drop-before', 'drop-after'));
+}
+
+function onDragPointerMove(e){
+  if (!dragState) return;
+  const deltaY = e.clientY - dragState.startY;
+  dragState.itemEl.style.transform = `translateY(${deltaY}px)`;
+
+  clearDropIndicators();
+  const items = Array.from(document.querySelectorAll('#queueList .queue-item')).filter(el => el !== dragState.itemEl);
+  let target = null;
+  for (const el of items){
+    const rect = el.getBoundingClientRect();
+    if (e.clientY < rect.top + rect.height / 2){ target = el; break; }
+  }
+  if (target){
+    target.classList.add('drop-before');
+    dragState.targetBeforePos = parseInt(target.dataset.pos, 10);
+    dragState.dropAtEnd = false;
+  } else {
+    dragState.dropAtEnd = true;
+    dragState.targetBeforePos = null;
+    if (items.length) items[items.length - 1].classList.add('drop-after');
+  }
+}
+
+function onDragPointerUp(){
+  if (!dragState) return;
+  const { fromPos, itemEl, dropAtEnd, targetBeforePos } = dragState;
+  itemEl.style.transform = "";
+  itemEl.classList.remove('dragging');
+  clearDropIndicators();
+  document.removeEventListener('pointermove', onDragPointerMove);
+  document.removeEventListener('pointerup', onDragPointerUp);
+  dragState = null;
+
+  const insertBeforePos = dropAtEnd ? player.order.length : targetBeforePos;
+  if (insertBeforePos !== null && insertBeforePos !== undefined){
+    reorderQueue(fromPos, insertBeforePos);
+  }
+}
+
+function reorderQueue(fromPos, insertBeforePos){
+  if (fromPos === insertBeforePos || fromPos === insertBeforePos - 1) return;
+  const currentPlayingGidx = currentGidx();
+  const [moved] = player.order.splice(fromPos, 1);
+  const adjusted = insertBeforePos > fromPos ? insertBeforePos - 1 : insertBeforePos;
+  player.order.splice(adjusted, 0, moved);
+  player.index = player.order.indexOf(currentPlayingGidx);
+  renderQueue();
+}
+
+function moveQueueItemBy(pos, delta){
+  const newPos = pos + delta;
+  if (newPos < 0 || newPos >= player.order.length) return;
+  const currentPlayingGidx = currentGidx();
+  [player.order[pos], player.order[newPos]] = [player.order[newPos], player.order[pos]];
+  player.index = player.order.indexOf(currentPlayingGidx);
+  renderQueue();
 }
 
 function syncLibraryHighlights(){
