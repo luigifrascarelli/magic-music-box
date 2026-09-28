@@ -1547,13 +1547,14 @@ function updateMediaSession(song, isPlaying){
   if (!('mediaSession' in navigator)) return;
   if (currentGidx() !== lastMediaGidx){
     lastMediaGidx = currentGidx();
+    applyMediaHandlers();
     navigator.mediaSession.metadata = new MediaMetadata({
       title: song.name,
       artist: song.performer,
       album: 'Magic Music Box',
       artwork: [
-        { src: 'icon-192.png', sizes: '192x192', type: 'image/png' },
-        { src: 'icon-512.png', sizes: '512x512', type: 'image/png' }
+        { src: 'artwork-192.png', sizes: '192x192', type: 'image/png' },
+        { src: 'artwork-512.png', sizes: '512x512', type: 'image/png' }
       ]
     });
   }
@@ -1573,15 +1574,23 @@ function updateMediaPosition(){
 }
 ['loadedmetadata', 'play', 'pause', 'seeked'].forEach(evt => audio.addEventListener(evt, updateMediaPosition));
 
-function initMediaSessionHandlers(){
+// iOS shows either "skip 10s" buttons or "next/previous track" buttons on the lock screen.
+// Registering seek handlers hides the track buttons, so we only register play/pause/next/previous
+// and explicitly clear the seek ones. Re-applied on every track change and every play, because
+// iOS can ignore handlers registered before playback starts.
+function applyMediaHandlers(){
   if (!('mediaSession' in navigator)) return;
   const set = (action, fn) => { try { navigator.mediaSession.setActionHandler(action, fn); } catch (e) {} };
   set('play', () => { if (!player.started) togglePlayPause(); else audio.play().catch(() => {}); });
   set('pause', () => audio.pause());
   set('previoustrack', goPrev);
   set('nexttrack', goNext);
-  set('seekto', (d) => { if (audio.duration && d.seekTime != null) audio.currentTime = d.seekTime; });
+  set('seekbackward', null);
+  set('seekforward', null);
+  set('seekto', null);
 }
+function initMediaSessionHandlers(){ applyMediaHandlers(); }
+audio.addEventListener('play', applyMediaHandlers);
 
 /* ---------- friendly message if a song can't load ---------- */
 let toastTimer = null;

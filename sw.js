@@ -4,7 +4,7 @@
    - Audio (.mp3) and byte-range requests are NOT intercepted: iOS/Safari need real
      range responses to play audio, so songs always go straight to the network. */
 
-const CACHE = 'mmb-shell-v1';
+const CACHE = 'mmb-shell-v2';
 const SHELL = [
   './',
   './index.html',
@@ -14,6 +14,8 @@ const SHELL = [
   './icon-192.png',
   './icon-512.png',
   './icon-maskable-512.png',
+  './artwork-192.png',
+  './artwork-512.png',
   './apple-touch-icon.png'
 ];
 
