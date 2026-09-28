@@ -5,6 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Magic Music Box — Music for Our Class</title>
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0d0221">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Music Box">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Audiowide&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -194,6 +201,69 @@
     color:var(--callout-text);
     font-size:13.5px;
     line-height:1.5;
+  }
+
+  /* ---------- install banner ---------- */
+  .install-banner{
+    position:relative;
+    display:flex;
+    align-items:flex-start;
+    gap:16px;
+    margin:0 0 24px;
+    padding:20px 44px 20px 20px;
+    border-radius:20px;
+    border:2px solid transparent;
+    background:
+      linear-gradient(160deg, var(--panel-2), var(--panel)) padding-box,
+      linear-gradient(135deg, #ff2fd6, #b967ff, #33d9ff) border-box;
+    animation:install-pulse 2.6s ease-in-out infinite;
+  }
+  @keyframes install-pulse{
+    0%,100%{ box-shadow:0 6px 22px rgba(255,47,214,0.2); }
+    50%{ box-shadow:0 8px 32px rgba(255,47,214,0.45), 0 0 0 3px rgba(255,47,214,0.1); }
+  }
+  .install-banner-icon-wrap{ flex-shrink:0; }
+  .install-banner-icon{ width:50px; height:35px; display:block; }
+  .install-banner-body{ flex:1; min-width:0; }
+  .install-banner-heading{
+    font-family:'Audiowide', 'Poppins', sans-serif;
+    font-weight:400;
+    font-size:17px;
+    margin-bottom:5px;
+    background:linear-gradient(90deg, #ff2fd6, #b967ff, #33d9ff);
+    -webkit-background-clip:text;
+    background-clip:text;
+    color:transparent;
+  }
+  .install-banner-sub{ font-size:12.5px; color:var(--text-1); line-height:1.45; margin-bottom:12px; }
+  .install-banner-steps{ margin:0 0 14px; padding:0; list-style:none; display:flex; flex-direction:column; gap:7px; }
+  .install-banner-steps li{ display:flex; align-items:center; gap:10px; font-size:13.5px; color:var(--text-0); line-height:1.3; }
+  .install-banner-steps .step-num{
+    flex-shrink:0; width:21px; height:21px; border-radius:50%;
+    background:linear-gradient(135deg,#ff2fd6,#b967ff,#33d9ff); color:#fff;
+    font-size:11px; font-weight:800; display:flex; align-items:center; justify-content:center;
+  }
+  .install-banner-btn{
+    padding:11px 22px;
+    border-radius:12px;
+    border:none;
+    font-size:13.5px;
+    font-weight:800;
+    color:#fff;
+    background:linear-gradient(135deg,#ff2fd6,#b967ff,#33d9ff);
+    cursor:pointer;
+    box-shadow:0 6px 18px rgba(255,47,214,0.4);
+  }
+  .install-banner-fallback{ margin-top:10px; font-size:11.5px; color:var(--text-2); }
+  .install-banner-close{
+    position:absolute; top:14px; right:14px;
+    width:26px; height:26px; border-radius:50%; border:none; background:rgba(255,255,255,0.08);
+    color:var(--text-2); cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0;
+  }
+  .install-banner-close:hover{ color:var(--text-0); }
+  @media (max-width:560px){
+    .install-banner{ flex-direction:column; padding:18px; }
+    .install-banner-icon-wrap{ display:none; }
   }
 
   /* ---------- category tabs ---------- */
@@ -793,6 +863,32 @@
     </div>
   </header>
 
+  <div class="install-banner" id="installBanner" style="display:none;">
+    <button class="install-banner-close" id="installBannerClose" type="button" aria-label="Dismiss"></button>
+    <div class="install-banner-icon-wrap">
+      <svg class="install-banner-icon" viewBox="0 0 64 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="installGrad" x1="0" y1="0" x2="64" y2="44" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#ff2fd6"/>
+            <stop offset="100%" stop-color="#33d9ff"/>
+          </linearGradient>
+        </defs>
+        <rect x="1.5" y="1.5" width="61" height="41" rx="7" fill="var(--logo-fill)" stroke="url(#installGrad)" stroke-width="2.5"/>
+        <rect x="10" y="6" width="44" height="12" rx="3" fill="none" stroke="url(#installGrad)" stroke-width="2"/>
+        <circle cx="18" cy="30" r="7.5" fill="none" stroke="url(#installGrad)" stroke-width="2.2"/>
+        <circle cx="46" cy="30" r="7.5" fill="none" stroke="url(#installGrad)" stroke-width="2.2"/>
+        <rect x="28" y="27" width="8" height="6" rx="1.5" fill="url(#installGrad)"/>
+      </svg>
+    </div>
+    <div class="install-banner-body">
+      <div class="install-banner-heading">Turn This Into an App!</div>
+      <div class="install-banner-sub" id="installBannerSub"></div>
+      <ol class="install-banner-steps" id="installBannerSteps"></ol>
+      <button class="install-banner-btn" id="installActionBtn" type="button" style="display:none;">Install Now</button>
+      <div class="install-banner-fallback" id="installBannerFallback" style="display:none;"></div>
+    </div>
+  </div>
+
   <div id="homeView">
     <div class="home-tiles">
       <button class="home-tile" id="tileJukebox" type="button">
@@ -1053,6 +1149,8 @@ const ICON_PAUSE_PATH = `<rect x="5" y="4" width="5" height="16" rx="1.5"/><rect
 const ICON_GRIP = `<svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><circle cx="8" cy="6" r="1.7"/><circle cx="8" cy="12" r="1.7"/><circle cx="8" cy="18" r="1.7"/><circle cx="16" cy="6" r="1.7"/><circle cx="16" cy="12" r="1.7"/><circle cx="16" cy="18" r="1.7"/></svg>`;
 const ICON_ARROW_UP = `<svg viewBox="0 0 24 24" width="12" height="12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 15l6-6 6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 const ICON_ARROW_DOWN = `<svg viewBox="0 0 24 24" width="12" height="12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+const ICON_X = `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>`;
+const ICON_SHARE_IOS = `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align:-3px;"><path d="M12 3v12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M8 7l4-4 4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><rect x="5" y="10" width="14" height="11" rx="2.5" stroke="currentColor" stroke-width="2"/></svg>`;
 const EQ_HTML = `<span></span><span></span><span></span>`;
 
 /* ---------- theme toggle ---------- */
@@ -1068,6 +1166,61 @@ themeToggleBtn.addEventListener('click', () => {
   const current = document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
   applyTheme(current === 'light' ? 'dark' : 'light');
 });
+
+/* ---------- "Add to Home Screen" install banner ---------- */
+(function initInstallBanner(){
+  const banner = document.getElementById('installBanner');
+  const subEl = document.getElementById('installBannerSub');
+  const stepsEl = document.getElementById('installBannerSteps');
+  const actionBtn = document.getElementById('installActionBtn');
+  const fallbackEl = document.getElementById('installBannerFallback');
+  const closeBtn = document.getElementById('installBannerClose');
+  closeBtn.innerHTML = ICON_X;
+
+  function dismiss(){
+    banner.style.display = 'none';
+    localStorage.setItem('mmb-install-dismissed', '1');
+  }
+  closeBtn.addEventListener('click', dismiss);
+
+  if (localStorage.getItem('mmb-install-dismissed') === '1') return;
+
+  const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+  if (isStandalone) return; // already installed
+
+  const ua = navigator.userAgent;
+  const isIOS = /iPad|iPhone|iPod/.test(ua) && !window.MSStream;
+  const isAndroid = /Android/.test(ua);
+
+  function step(num, html){
+    return `<li><span class="step-num">${num}</span><span>${html}</span></li>`;
+  }
+
+  if (isIOS){
+    subEl.textContent = "No app store needed — takes about 10 seconds:";
+    stepsEl.innerHTML =
+      step(1, `Tap the Share icon ${ICON_SHARE_IOS} in Safari's toolbar`) +
+      step(2, `Scroll down and tap <b>"Add to Home Screen"</b>`) +
+      step(3, `Tap <b>"Add"</b> in the top right — done!`);
+    banner.style.display = 'flex';
+  } else if (isAndroid){
+    subEl.textContent = "Get one-tap access from your home screen — no app store needed.";
+    fallbackEl.textContent = 'Don\u2019t see a button? Tap the \u22ee menu in Chrome, then "Add to Home Screen."';
+    fallbackEl.style.display = '';
+    banner.style.display = 'flex';
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      actionBtn.style.display = '';
+      fallbackEl.style.display = 'none';
+      actionBtn.onclick = async () => {
+        e.prompt();
+        await e.userChoice;
+        dismiss();
+      };
+    });
+  }
+  // Desktop / other browsers: installability isn't relevant here, banner stays hidden.
+})();
 
 /* ---------- view switching (Home / Library / Jukebox) ---------- */
 const navLibrary = document.getElementById('navLibrary');
