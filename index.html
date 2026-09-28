@@ -489,6 +489,38 @@
     .header-controls{ width:100%; justify-content:space-between; }
   }
 
+  /* ---------- song of the day ---------- */
+  .song-of-day{
+    position:relative;
+    margin-bottom:22px;
+    padding:18px 22px;
+    border-radius:18px;
+    border:2px solid transparent;
+    background:
+      linear-gradient(160deg, var(--panel-2), var(--panel)) padding-box,
+      linear-gradient(135deg, #ff2fd6, #b967ff, #33d9ff) border-box;
+  }
+  .sod-eyebrow{
+    font-size:11px; font-weight:800; letter-spacing:0.1em; text-transform:uppercase;
+    margin-bottom:8px;
+    background:linear-gradient(90deg, #ff2fd6, #b967ff, #33d9ff);
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+  }
+  .sod-row{ display:flex; align-items:center; gap:14px; }
+  .sod-info{ flex:1; min-width:0; }
+  .sod-name{ font-size:18px; font-weight:800; color:var(--text-0); margin-bottom:2px; }
+  .sod-meta{ font-size:12.5px; color:var(--text-2); }
+  .sod-play-btn{
+    flex-shrink:0; padding:10px 20px; border-radius:12px; border:none;
+    font-size:13.5px; font-weight:800; color:#fff;
+    background:linear-gradient(135deg,#ff2fd6,#b967ff,#33d9ff); cursor:pointer;
+    box-shadow:0 4px 16px rgba(255,47,214,0.35);
+  }
+  @media (max-width:480px){
+    .sod-row{ flex-direction:column; align-items:stretch; }
+    .sod-play-btn{ width:100%; }
+  }
+
   /* ---------- home tiles ---------- */
   .home-tiles{
     display:grid;
@@ -709,6 +741,16 @@
   }
   .builder-open-btn:hover{ border-color:#ff2fd6; color:var(--text-0); }
 
+  .offline-download-btn{
+    display:flex; align-items:center; justify-content:center; gap:8px;
+    width:100%; margin-bottom:20px; padding:11px 16px;
+    border-radius:12px; border:1px dashed rgba(255,47,214,0.4);
+    background:rgba(255,47,214,0.06); color:var(--text-1);
+    font-size:12.5px; font-weight:700; cursor:pointer;
+  }
+  .offline-download-btn:hover{ border-color:#ff2fd6; color:var(--text-0); background:rgba(255,47,214,0.1); }
+  .offline-download-btn:disabled{ opacity:0.6; cursor:default; }
+
   /* ---------- playlist builder ---------- */
   .builder-header{ display:flex; align-items:center; gap:12px; margin-bottom:18px; }
   .builder-back{
@@ -914,6 +956,16 @@
   </div>
 
   <div id="homeView">
+    <div class="song-of-day" id="songOfDay" style="display:none;">
+      <div class="sod-eyebrow">Song of the Day</div>
+      <div class="sod-row">
+        <div class="sod-info">
+          <div class="sod-name" id="sodName"></div>
+          <div class="sod-meta" id="sodMeta"></div>
+        </div>
+        <button class="sod-play-btn" id="sodPlayBtn" type="button">Play</button>
+      </div>
+    </div>
     <div class="home-tiles">
       <button class="home-tile" id="tileJukebox" type="button">
         <svg viewBox="0 0 120 84" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -1098,6 +1150,8 @@
         </button>
       </div>
     </div>
+
+    <button class="offline-download-btn" id="offlineDownloadBtn" type="button" style="display:none;"></button>
 
     <div class="queue-header">
       <h2>Up Next</h2>
@@ -1761,7 +1815,36 @@ function syncLibraryHighlights(){
     const btn = tr.querySelector('.card-play-btn');
     if (btn) btn.textContent = (isCurrent && isPlaying) ? 'Playing' : 'Play';
   });
+  syncSongOfDay(gidx, isPlaying);
 }
+
+/* ---------- song of the day ---------- */
+// Deterministic per-calendar-day pick from the main (non-bonus) catalog — same
+// song for everyone on a given day, rotating through the library over time.
+function getSongOfTheDay(){
+  const pool = SONGS.filter(s => !s.bonus);
+  if (!pool.length) return null;
+  const dayIndex = Math.floor(Date.now() / 86400000);
+  return pool[dayIndex % pool.length];
+}
+
+function syncSongOfDay(currentGidxVal, isPlaying){
+  const wrap = document.getElementById('songOfDay');
+  const song = getSongOfTheDay();
+  if (!song){ wrap.style.display = 'none'; return; }
+  const gidx = SONGS.indexOf(song);
+  wrap.dataset.gidx = gidx;
+  wrap.style.display = '';
+  document.getElementById('sodName').textContent = song.name;
+  document.getElementById('sodMeta').textContent = `Created by: ${song.performer}`;
+  const isThisPlaying = currentGidxVal === gidx && isPlaying;
+  document.getElementById('sodPlayBtn').textContent = isThisPlaying ? 'Playing' : 'Play';
+}
+
+document.getElementById('sodPlayBtn').addEventListener('click', () => {
+  const gidx = parseInt(document.getElementById('songOfDay').dataset.gidx, 10);
+  if (!isNaN(gidx)) playFromLibrary(gidx);
+});
 
 /* ---------- bonus tracks rendering ---------- */
 function renderBonusView(){
@@ -1894,9 +1977,44 @@ renderAll();
 renderBonusView();
 loadTrack(0, false); // preload first track's info into Jukebox/mini-player without playing
 
-/* ---------- service worker (installability + offline app shell) ---------- */
+/* ---------- service worker (installability + offline app shell + offline songs) ---------- */
 if ('serviceWorker' in navigator){
   window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js').catch(() => {}); });
+  initOfflineDownload();
+} else {
+  document.getElementById('offlineDownloadBtn').style.display = 'none';
+}
+
+function initOfflineDownload(){
+  const btn = document.getElementById('offlineDownloadBtn');
+  btn.style.display = '';
+  btn.innerHTML = `${ICON_DOWNLOAD} Download all songs for offline listening`;
+
+  btn.addEventListener('click', async () => {
+    btn.disabled = true;
+    let done = 0;
+    const total = SONGS.length;
+    btn.innerHTML = `${ICON_DOWNLOAD} Downloading 0 / ${total}\u2026`;
+    let failed = 0;
+    for (const song of SONGS){
+      try {
+        const res = await fetch(song.url, { cache: 'reload' }); // bypasses HTTP cache, still hits the SW, which caches it
+        if (!res.ok) failed++;
+      } catch (e){
+        failed++;
+      }
+      done++;
+      btn.innerHTML = `${ICON_DOWNLOAD} Downloading ${done} / ${total}\u2026`;
+    }
+    btn.disabled = false;
+    if (failed){
+      btn.innerHTML = `${ICON_DOWNLOAD} ${total - failed} of ${total} downloaded \u2014 tap to retry the rest`;
+      showToast(`Some songs couldn\u2019t download \u2014 check your connection.`);
+    } else {
+      btn.innerHTML = `${ICON_DOWNLOAD} All ${total} songs are ready offline!`;
+      showToast('All songs are now available offline.');
+    }
+  });
 }
 </script>
 
