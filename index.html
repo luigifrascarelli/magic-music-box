@@ -2,14 +2,14 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Magic Music Box — Music for Our Class</title>
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#0d0221">
+<meta name="theme-color" id="themeColorMeta" content="#0d0221">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="apple-mobile-web-app-title" content="Music Box">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -123,7 +123,7 @@
     z-index:1;
     max-width:1200px;
     margin:0 auto;
-    padding:36px 28px 90px;
+    padding:36px 28px calc(90px + env(safe-area-inset-bottom, 0px));
   }
 
   /* ---------- header ---------- */
@@ -202,6 +202,29 @@
     font-size:13.5px;
     line-height:1.5;
   }
+
+  /* ---------- toast ---------- */
+  .toast{
+    position:fixed;
+    left:50%;
+    bottom:calc(84px + env(safe-area-inset-bottom, 0px));
+    transform:translateX(-50%) translateY(12px);
+    max-width:min(90vw, 420px);
+    padding:11px 18px;
+    border-radius:12px;
+    background:var(--panel-2);
+    color:var(--text-0);
+    border:1px solid rgba(255,47,214,0.45);
+    box-shadow:0 8px 26px rgba(0,0,0,0.4);
+    font-size:13px;
+    font-weight:600;
+    text-align:center;
+    opacity:0;
+    pointer-events:none;
+    transition:opacity 0.2s ease, transform 0.2s ease;
+    z-index:60;
+  }
+  .toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
 
   /* ---------- install banner ---------- */
   .install-banner{
@@ -462,7 +485,7 @@
   .table-chip-cell{ display:flex; flex-wrap:wrap; gap:4px; }
 
   @media (max-width:640px){
-    .page{ padding:24px 16px 70px; }
+    .page{ padding:24px 16px calc(70px + env(safe-area-inset-bottom, 0px)); }
     .header-controls{ width:100%; justify-content:space-between; }
   }
 
@@ -744,6 +767,7 @@
     box-shadow:0 -8px 30px rgba(0,0,0,0.4);
     transform:translateY(100%);
     transition:transform 0.25s ease;
+    padding-bottom:env(safe-area-inset-bottom, 0px);
   }
   #miniPlayer.visible{ transform:translateY(0); }
   #miniProgressTrack{ height:3px; width:100%; background:rgba(255,255,255,0.1); cursor:pointer; }
@@ -1133,6 +1157,8 @@
   </div>
 </div>
 
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
 <audio id="globalAudio" preload="none"></audio>
 
 <script src="data.js"></script>
@@ -1160,6 +1186,8 @@ function applyTheme(theme){
   themeToggleBtn.innerHTML = theme === 'light' ? ICON_MOON : ICON_SUN;
   themeToggleBtn.setAttribute('aria-label', theme === 'light' ? 'Switch to dark theme' : 'Switch to light theme');
   localStorage.setItem('mmb-theme', theme);
+  const metaTheme = document.getElementById('themeColorMeta');
+  if (metaTheme) metaTheme.setAttribute('content', theme === 'light' ? '#fdf5ff' : '#0d0221');
 }
 applyTheme(localStorage.getItem('mmb-theme') || 'dark');
 themeToggleBtn.addEventListener('click', () => {
@@ -1513,6 +1541,63 @@ document.getElementById('startJukeboxBtn').addEventListener('click', () => {
 });
 
 /* ---------- render: now-playing panel, mini-player, queue, library highlights ---------- */
+/* ---------- lock-screen / notification controls (Media Session API) ---------- */
+let lastMediaGidx = null;
+function updateMediaSession(song, isPlaying){
+  if (!('mediaSession' in navigator)) return;
+  if (currentGidx() !== lastMediaGidx){
+    lastMediaGidx = currentGidx();
+    navigator.mediaSession.metadata = new MediaMetadata({
+      title: song.name,
+      artist: song.performer,
+      album: 'Magic Music Box',
+      artwork: [
+        { src: 'icon-192.png', sizes: '192x192', type: 'image/png' },
+        { src: 'icon-512.png', sizes: '512x512', type: 'image/png' }
+      ]
+    });
+  }
+  navigator.mediaSession.playbackState = isPlaying ? 'playing' : 'paused';
+}
+
+function updateMediaPosition(){
+  if (!('mediaSession' in navigator) || !navigator.mediaSession.setPositionState) return;
+  if (!isFinite(audio.duration) || audio.duration <= 0) return;
+  try {
+    navigator.mediaSession.setPositionState({
+      duration: audio.duration,
+      playbackRate: audio.playbackRate || 1,
+      position: Math.min(audio.currentTime, audio.duration)
+    });
+  } catch (e) {}
+}
+['loadedmetadata', 'play', 'pause', 'seeked'].forEach(evt => audio.addEventListener(evt, updateMediaPosition));
+
+function initMediaSessionHandlers(){
+  if (!('mediaSession' in navigator)) return;
+  const set = (action, fn) => { try { navigator.mediaSession.setActionHandler(action, fn); } catch (e) {} };
+  set('play', () => { if (!player.started) togglePlayPause(); else audio.play().catch(() => {}); });
+  set('pause', () => audio.pause());
+  set('previoustrack', goPrev);
+  set('nexttrack', goNext);
+  set('seekto', (d) => { if (audio.duration && d.seekTime != null) audio.currentTime = d.seekTime; });
+}
+
+/* ---------- friendly message if a song can't load ---------- */
+let toastTimer = null;
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 4000);
+}
+audio.addEventListener('error', () => {
+  if (!audio.getAttribute('src')) return;
+  showToast("Couldn\u2019t play that song \u2014 check your connection and try again.");
+  refreshNowPlayingUI();
+});
+
 function refreshNowPlayingUI(){
   const song = currentSong();
   const isPlaying = player.started && !audio.paused;
@@ -1528,6 +1613,7 @@ function refreshNowPlayingUI(){
   document.getElementById('miniPlayIcon').innerHTML = isPlaying ? ICON_PAUSE_PATH : ICON_PLAY_PATH;
   document.getElementById('miniReel').classList.toggle('spinning', isPlaying);
 
+  updateMediaSession(song, isPlaying);
   renderQueue();
   syncLibraryHighlights();
 }
@@ -1794,11 +1880,16 @@ document.getElementById('tableBtn').addEventListener('click', () => {
   renderAll();
 });
 
+initMediaSessionHandlers();
 renderAll();
 renderBonusView();
 loadTrack(0, false); // preload first track's info into Jukebox/mini-player without playing
-</script>
 
+/* ---------- service worker (installability + offline app shell) ---------- */
+if ('serviceWorker' in navigator){
+  window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js').catch(() => {}); });
+}
+</script>
 
 </body>
 </html>

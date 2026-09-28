@@ -1,13 +1,16 @@
 {
+  "id": "./",
   "name": "Magic Music Box",
   "short_name": "Music Box",
   "description": "Songs for Pre-K Orange - the best class ever!",
+  "lang": "en",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#0d0221",
   "theme_color": "#0d0221",
+  "categories": ["music", "education", "kids"],
   "icons": [
     {
       "src": "icon-192.png",
@@ -20,6 +23,12 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
+    },
+    {
+      "src": "icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ]
 }
