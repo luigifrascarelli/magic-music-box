@@ -42,6 +42,15 @@ const CATEGORIES = [
 //              still selectable in the Builder via its "Bonus Tracks" filter tab). Omit for normal songs.
 //   collection optional — groups bonus songs into a named set (e.g. "Halloween"). Not filtered
 //              on anywhere yet, but ready for when a second bonus collection is added.
+//   lyrics     optional — powers the sing-along "Show Lyrics" panel in the Jukebox. Two ways to set it:
+//                1) A plain string, one line per lyric, separated by \n — lines are spaced evenly
+//                   across the song's `dur`. Easiest option, no timing needed:
+//                     lyrics: "Once upon a time\nIn a land far away\n..."
+//                2) An array of { t: <seconds>, text: "..." } for hand-timed lines, if you want the
+//                   highlight to land exactly on the beat:
+//                     lyrics: [ { t: 0, text: "Once upon a time" }, { t: 4.5, text: "In a land far away" } ]
+//              Leave the field off entirely for songs with no lyrics yet — the Lyrics button just
+//              won't show for that song.
 const SONGS = [
 { dur: "1:38", sortDur: "0138", name: "T is a Happy Letter", url: "songs/t-is-a-happy-letter.mp3", performer: "DJ Circle Time ft. Pre-K Orange", notes: "A cheerful song celebrating the letter T.", mood: ["Letters & Counting", "Silly & Giggles"], occasion: "", category: ["letters", "silly"] },
 { dur: "3:36", sortDur: "0336", name: "Tiny Turtle", url: "songs/tiny-turtle.mp3", performer: "DJ Circle Time ft. Pre-K Orange", notes: "A cheerful song about turtles.", mood: ["Silly & Giggles"], occasion: "", category: ["silly"] },

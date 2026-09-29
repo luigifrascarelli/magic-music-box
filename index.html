@@ -489,38 +489,6 @@
     .header-controls{ width:100%; justify-content:space-between; }
   }
 
-  /* ---------- song of the day ---------- */
-  .song-of-day{
-    position:relative;
-    margin-bottom:22px;
-    padding:18px 22px;
-    border-radius:18px;
-    border:2px solid transparent;
-    background:
-      linear-gradient(160deg, var(--panel-2), var(--panel)) padding-box,
-      linear-gradient(135deg, #ff2fd6, #b967ff, #33d9ff) border-box;
-  }
-  .sod-eyebrow{
-    font-size:11px; font-weight:800; letter-spacing:0.1em; text-transform:uppercase;
-    margin-bottom:8px;
-    background:linear-gradient(90deg, #ff2fd6, #b967ff, #33d9ff);
-    -webkit-background-clip:text; background-clip:text; color:transparent;
-  }
-  .sod-row{ display:flex; align-items:center; gap:14px; }
-  .sod-info{ flex:1; min-width:0; }
-  .sod-name{ font-size:18px; font-weight:800; color:var(--text-0); margin-bottom:2px; }
-  .sod-meta{ font-size:12.5px; color:var(--text-2); }
-  .sod-play-btn{
-    flex-shrink:0; padding:10px 20px; border-radius:12px; border:none;
-    font-size:13.5px; font-weight:800; color:#fff;
-    background:linear-gradient(135deg,#ff2fd6,#b967ff,#33d9ff); cursor:pointer;
-    box-shadow:0 4px 16px rgba(255,47,214,0.35);
-  }
-  @media (max-width:480px){
-    .sod-row{ flex-direction:column; align-items:stretch; }
-    .sod-play-btn{ width:100%; }
-  }
-
   /* ---------- home tiles ---------- */
   .home-tiles{
     display:grid;
@@ -675,6 +643,35 @@
     background:linear-gradient(135deg,#ff2fd6,#b967ff,#33d9ff) !important;
     color:#fff !important; box-shadow:0 6px 22px rgba(255,47,214,0.4);
   }
+
+  /* ---------- sing-along lyrics ---------- */
+  .lyrics-toggle-btn{
+    display:block; margin:16px auto 0; padding:8px 18px;
+    border-radius:999px; border:1px solid var(--border);
+    background:var(--panel); color:var(--text-1);
+    font-size:12.5px; font-weight:700; cursor:pointer;
+  }
+  .lyrics-toggle-btn:hover{ border-color:#ff2fd6; color:var(--text-0); }
+  .lyrics-toggle-btn.active{
+    background:linear-gradient(135deg,#ff2fd6,#b967ff,#33d9ff); color:#fff; border-color:transparent;
+  }
+  .lyrics-panel{
+    margin-top:16px; padding:18px 16px;
+    border-radius:16px; border:1px solid var(--border); background:var(--panel-2);
+    max-height:240px; overflow-y:auto; scroll-behavior:smooth;
+  }
+  .lyrics-list{ display:flex; flex-direction:column; gap:10px; }
+  .lyrics-line{
+    text-align:center; font-size:14px; font-weight:600; color:var(--text-2);
+    transition:color 0.25s ease, font-size 0.25s ease, transform 0.25s ease;
+  }
+  .lyrics-line.current{
+    color:#fff; font-size:19px; font-weight:800;
+    text-shadow:0 0 16px rgba(255,47,214,0.6);
+    transform:scale(1.03);
+  }
+  .lyrics-line.sung{ color:var(--text-2); opacity:0.55; }
+  .lyrics-empty{ text-align:center; font-size:13px; color:var(--text-2); padding:10px 0; }
 
   .queue-header{ display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
   .queue-header h2{ font-size:15px; font-weight:800; margin:0; color:var(--text-0); }
@@ -956,16 +953,6 @@
   </div>
 
   <div id="homeView">
-    <div class="song-of-day" id="songOfDay" style="display:none;">
-      <div class="sod-eyebrow">Song of the Day</div>
-      <div class="sod-row">
-        <div class="sod-info">
-          <div class="sod-name" id="sodName"></div>
-          <div class="sod-meta" id="sodMeta"></div>
-        </div>
-        <button class="sod-play-btn" id="sodPlayBtn" type="button">Play</button>
-      </div>
-    </div>
     <div class="home-tiles">
       <button class="home-tile" id="tileJukebox" type="button">
         <svg viewBox="0 0 120 84" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -1149,6 +1136,10 @@
           <span class="toggle-dot"></span>
         </button>
       </div>
+      <button class="lyrics-toggle-btn" id="lyricsToggleBtn" type="button" style="display:none;">Show Lyrics</button>
+      <div class="lyrics-panel" id="lyricsPanel" style="display:none;">
+        <div class="lyrics-list" id="lyricsList"></div>
+      </div>
     </div>
 
     <button class="offline-download-btn" id="offlineDownloadBtn" type="button" style="display:none;"></button>
@@ -1214,6 +1205,7 @@
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <audio id="globalAudio" preload="none"></audio>
+<audio id="globalAudioB" preload="none"></audio>
 
 <script src="data.js"></script>
 <script>
@@ -1382,11 +1374,22 @@ function formatTime(sec){
 }
 
 /* ============================================================
-   SHARED PLAYER — one <audio> element drives the Library play
-   buttons, the Jukebox tab, and the mini-player, so playback
-   continues uninterrupted as you switch views.
+   SHARED PLAYER — two <audio> elements so songs can crossfade
+   into each other. `audio` always points at whichever element is
+   currently "live" (drives the UI, lock screen, mini-player);
+   `fadeSlot` is the other one, idle except during a crossfade.
+   Every place that reads/writes `audio.*` keeps working exactly
+   as before — the pointer just gets reassigned at the moment a
+   crossfade finishes, so nothing else needs to know it happened.
    ============================================================ */
-const audio = document.getElementById('globalAudio');
+const slotA = document.getElementById('globalAudio');
+const slotB = document.getElementById('globalAudioB');
+let audio = slotA;
+let fadeSlot = slotB;
+
+const CROSSFADE_SEC = 3;
+let crossfadeRAF = null;
+
 const mainGidx = SONGS.map((_, i) => i).filter(i => !SONGS[i].bonus);
 const player = {
   index: 0,
@@ -1395,7 +1398,9 @@ const player = {
   activePool: 'main', // 'main' or 'bonus' — decides what shuffle/order rebuilds rebuild from
   shuffle: false,
   repeat: false,
-  started: false
+  started: false,
+  crossfading: false,
+  crossfadeTargetIndex: null
 };
 
 function getBonusGidx(){ return SONGS.map((_, i) => i).filter(i => SONGS[i].bonus); }
@@ -1410,10 +1415,21 @@ function poolOrder(){
 function currentSong(){ return SONGS[player.order[player.index]]; }
 function currentGidx(){ return player.order[player.index]; }
 
+// Given the current position, where does auto-advance (natural end, or a
+// crossfade) go next? null means "stop — last track, repeat is off."
+// Manual Next/Previous button presses don't use this — they always wrap.
+function computeNextIndex(currentIndex, orderLength, repeat){
+  if (orderLength <= 0) return null;
+  if (currentIndex >= orderLength - 1) return repeat ? 0 : null;
+  return currentIndex + 1;
+}
+
 function loadTrack(newIndex, autoplay){
+  cancelCrossfade();
   player.index = (newIndex + player.order.length) % player.order.length;
   const song = currentSong();
   audio.src = song.url;
+  audio.volume = 1;
   refreshNowPlayingUI();
   if (autoplay){
     player.started = true;
@@ -1435,35 +1451,130 @@ function playFromLibrary(gidx){
 
 function togglePlayPause(){
   if (!player.started){ loadTrack(player.index, true); return; }
-  if (audio.paused){ audio.play().catch(() => {}); } else { audio.pause(); }
+  if (audio.paused){ audio.play().catch(() => {}); }
+  else { cancelCrossfade(); audio.pause(); }
 }
 
 function goNext(){ loadTrack(player.index + 1, true); }
 function goPrev(){ loadTrack(player.index - 1, true); }
 
-audio.addEventListener('ended', () => {
-  if (!player.repeat && player.index === player.order.length - 1){
-    refreshNowPlayingUI();
+/* ---------- crossfade ---------- */
+function maybeStartCrossfade(){
+  if (player.crossfading) return;
+  if (!audio.duration || !isFinite(audio.duration)) return;
+  const remaining = audio.duration - audio.currentTime;
+  if (remaining > CROSSFADE_SEC || remaining <= 0) return;
+  const nextIdx = computeNextIndex(player.index, player.order.length, player.repeat);
+  if (nextIdx === null) return; // last track, repeat off — let it end normally, no next song to fade into
+  startCrossfade(nextIdx);
+}
+
+function startCrossfade(nextIdx){
+  const nextSong = SONGS[player.order[nextIdx]];
+  if (!nextSong) return;
+  player.crossfading = true;
+  player.crossfadeTargetIndex = nextIdx;
+  fadeSlot.src = nextSong.url;
+  fadeSlot.currentTime = 0;
+  fadeSlot.volume = 0;
+  fadeSlot.play().catch(() => { cancelCrossfade(); });
+
+  const outgoing = audio;
+  const incoming = fadeSlot;
+  const startTime = performance.now();
+
+  function step(now){
+    if (!player.crossfading) return; // cancelled mid-flight
+    const frac = Math.min((now - startTime) / 1000 / CROSSFADE_SEC, 1);
+    outgoing.volume = 1 - frac;
+    incoming.volume = frac;
+    if (frac >= 1){ finishCrossfade(); return; }
+    crossfadeRAF = requestAnimationFrame(step);
+  }
+  crossfadeRAF = requestAnimationFrame(step);
+}
+
+function finishCrossfade(){
+  if (crossfadeRAF) cancelAnimationFrame(crossfadeRAF);
+  crossfadeRAF = null;
+  const oldEl = audio;
+  oldEl.pause();
+  oldEl.volume = 1;
+  // Swap roles: the element that was fading in is now the live one.
+  audio = fadeSlot;
+  fadeSlot = oldEl;
+  audio.volume = 1;
+  player.index = player.crossfadeTargetIndex;
+  player.crossfading = false;
+  player.crossfadeTargetIndex = null;
+  refreshNowPlayingUI();
+}
+
+function cancelCrossfade(){
+  if (!player.crossfading){
+    fadeSlot.pause(); // in case something odd left it playing
     return;
   }
-  goNext();
-});
-audio.addEventListener('play', refreshNowPlayingUI);
-audio.addEventListener('pause', refreshNowPlayingUI);
-audio.addEventListener('loadedmetadata', () => {
+  if (crossfadeRAF) cancelAnimationFrame(crossfadeRAF);
+  crossfadeRAF = null;
+  fadeSlot.pause();
+  fadeSlot.volume = 0;
+  audio.volume = 1;
+  player.crossfading = false;
+  player.crossfadeTargetIndex = null;
+}
+
+/* ---------- audio element event wiring (both slots, guarded to whichever is active) ---------- */
+function isActiveEl(el){ return el === audio; }
+
+function handleEnded(e){
+  if (!isActiveEl(e.target)) return;
+  if (player.crossfading) return; // the crossfade timer already handles the transition
+  const nextIdx = computeNextIndex(player.index, player.order.length, player.repeat);
+  if (nextIdx === null){ refreshNowPlayingUI(); return; }
+  loadTrack(nextIdx, true);
+}
+function handlePlay(e){ if (isActiveEl(e.target)) refreshNowPlayingUI(); }
+function handlePause(e){ if (isActiveEl(e.target)) refreshNowPlayingUI(); }
+function handleLoadedMetadata(e){
+  if (!isActiveEl(e.target)) return;
   document.getElementById('jbDurTime').textContent = formatTime(audio.duration);
-});
-audio.addEventListener('timeupdate', () => {
+}
+function handleTimeUpdate(e){
+  if (!isActiveEl(e.target)) return;
   const pct = audio.duration ? (audio.currentTime / audio.duration) * 100 : 0;
   const pctStr = pct + "%";
   document.getElementById('jbProgressFill').style.width = pctStr;
   document.getElementById('jbProgressTrack').style.setProperty('--progress', pctStr);
   document.getElementById('jbCurTime').textContent = formatTime(audio.currentTime);
   document.getElementById('miniProgressFill').style.width = pctStr;
+  updateLyricsHighlight();
+  maybeStartCrossfade();
+}
+function handleAudioError(e){
+  if (!isActiveEl(e.target)){
+    // The fade-in element failed to load — abandon the crossfade quietly,
+    // the current song just keeps playing normally to its natural end.
+    cancelCrossfade();
+    return;
+  }
+  if (!audio.getAttribute('src')) return;
+  showToast("Couldn\u2019t play that song \u2014 check your connection and try again.");
+  refreshNowPlayingUI();
+}
+
+[slotA, slotB].forEach((el) => {
+  el.addEventListener('ended', handleEnded);
+  el.addEventListener('play', handlePlay);
+  el.addEventListener('pause', handlePause);
+  el.addEventListener('loadedmetadata', handleLoadedMetadata);
+  el.addEventListener('timeupdate', handleTimeUpdate);
+  el.addEventListener('error', handleAudioError);
 });
 
 function seekFromClick(trackEl){
   trackEl.addEventListener('click', (e) => {
+    cancelCrossfade();
     const rect = trackEl.getBoundingClientRect();
     const pct = Math.min(Math.max((e.clientX - rect.left) / rect.width, 0), 1);
     if (audio.duration) audio.currentTime = pct * audio.duration;
@@ -1492,6 +1603,7 @@ function shuffleOrder(){
 }
 const shuffleBtn = document.getElementById('jbShuffleBtn');
 shuffleBtn.addEventListener('click', () => {
+  cancelCrossfade();
   player.shuffle = !player.shuffle;
   shuffleBtn.classList.toggle('active', player.shuffle);
   const current = currentGidx();
@@ -1615,7 +1727,8 @@ function updateMediaSession(song, isPlaying){
   navigator.mediaSession.playbackState = isPlaying ? 'playing' : 'paused';
 }
 
-function updateMediaPosition(){
+function updateMediaPosition(e){
+  if (e && e.target !== audio) return;
   if (!('mediaSession' in navigator) || !navigator.mediaSession.setPositionState) return;
   if (!isFinite(audio.duration) || audio.duration <= 0) return;
   try {
@@ -1626,7 +1739,9 @@ function updateMediaPosition(){
     });
   } catch (e) {}
 }
-['loadedmetadata', 'play', 'pause', 'seeked'].forEach(evt => audio.addEventListener(evt, updateMediaPosition));
+[slotA, slotB].forEach((el) => {
+  ['loadedmetadata', 'play', 'pause', 'seeked'].forEach((evt) => el.addEventListener(evt, updateMediaPosition));
+});
 
 // iOS shows either "skip 10s" buttons or "next/previous track" buttons on the lock screen.
 // Registering seek handlers hides the track buttons, so we only register play/pause/next/previous
@@ -1644,7 +1759,7 @@ function applyMediaHandlers(){
   set('seekto', null);
 }
 function initMediaSessionHandlers(){ applyMediaHandlers(); }
-audio.addEventListener('play', applyMediaHandlers);
+[slotA, slotB].forEach((el) => el.addEventListener('play', (e) => { if (e.target === audio) applyMediaHandlers(); }));
 
 /* ---------- friendly message if a song can't load ---------- */
 let toastTimer = null;
@@ -1655,11 +1770,6 @@ function showToast(msg){
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => t.classList.remove('show'), 4000);
 }
-audio.addEventListener('error', () => {
-  if (!audio.getAttribute('src')) return;
-  showToast("Couldn\u2019t play that song \u2014 check your connection and try again.");
-  refreshNowPlayingUI();
-});
 
 function refreshNowPlayingUI(){
   const song = currentSong();
@@ -1677,9 +1787,102 @@ function refreshNowPlayingUI(){
   document.getElementById('miniReel').classList.toggle('spinning', isPlaying);
 
   updateMediaSession(song, isPlaying);
+  renderLyricsForSong(song);
   renderQueue();
   syncLibraryHighlights();
 }
+
+/* ---------- sing-along lyrics ---------- */
+// Converts "2:06" -> 126 (seconds). Falls back to 180s if it can't parse.
+function parseDurToSeconds(durStr){
+  if (!durStr || typeof durStr !== 'string') return 180;
+  const parts = durStr.split(':').map(Number);
+  if (parts.length !== 2 || parts.some(isNaN)) return 180;
+  return parts[0] * 60 + parts[1];
+}
+
+// Accepts either a plain "\n"-separated string (auto-spaced evenly across the
+// song's duration) or an array of {t, text} for hand-timed lyrics. Returns
+// an array of {t, text} sorted by time, or null if the song has no lyrics.
+function parseLyrics(song){
+  if (!song || !song.lyrics) return null;
+  if (typeof song.lyrics === 'string'){
+    const lines = song.lyrics.split('\n').map((l) => l.trim()).filter(Boolean);
+    if (!lines.length) return null;
+    const durSec = parseDurToSeconds(song.dur);
+    const step = durSec / lines.length;
+    return lines.map((text, i) => ({ t: i * step, text }));
+  }
+  if (Array.isArray(song.lyrics)){
+    const lines = song.lyrics.filter((l) => l && typeof l.text === 'string' && typeof l.t === 'number');
+    if (!lines.length) return null;
+    return lines.slice().sort((a, b) => a.t - b.t);
+  }
+  return null;
+}
+
+// Which line should be highlighted at a given playback position.
+function findCurrentLineIndex(lines, currentTime){
+  let idx = 0;
+  for (let i = 0; i < lines.length; i++){
+    if (lines[i].t <= currentTime) idx = i; else break;
+  }
+  return idx;
+}
+
+let currentLyricsLines = null;
+let lastLyricsGidx = null;
+
+function renderLyricsForSong(song){
+  const gidx = currentGidx();
+  if (gidx === lastLyricsGidx) return; // same song still playing — don't reset scroll/state
+  lastLyricsGidx = gidx;
+
+  const toggleBtn = document.getElementById('lyricsToggleBtn');
+  const panel = document.getElementById('lyricsPanel');
+  const list = document.getElementById('lyricsList');
+  currentLyricsLines = parseLyrics(song);
+
+  if (!currentLyricsLines){
+    toggleBtn.style.display = 'none';
+    panel.style.display = 'none';
+    toggleBtn.classList.remove('active');
+    toggleBtn.textContent = 'Show Lyrics';
+    list.innerHTML = '';
+    return;
+  }
+
+  toggleBtn.style.display = '';
+  list.innerHTML = currentLyricsLines.map((l, i) =>
+    `<div class="lyrics-line" data-i="${i}">${l.text}</div>`
+  ).join('');
+  // Panel visibility (open/closed) persists across songs; only the content changes.
+}
+
+function updateLyricsHighlight(){
+  if (!currentLyricsLines) return;
+  const panel = document.getElementById('lyricsPanel');
+  if (panel.style.display === 'none') return;
+  const lineEls = document.querySelectorAll('#lyricsList .lyrics-line');
+  if (!lineEls.length) return;
+  const activeIdx = findCurrentLineIndex(currentLyricsLines, audio.currentTime);
+  lineEls.forEach((el, i) => {
+    el.classList.toggle('current', i === activeIdx);
+    el.classList.toggle('sung', i < activeIdx);
+  });
+  const activeEl = lineEls[activeIdx];
+  if (activeEl && activeEl.scrollIntoView) activeEl.scrollIntoView({ block: 'center', behavior: 'smooth' });
+}
+
+document.getElementById('lyricsToggleBtn').addEventListener('click', () => {
+  const btn = document.getElementById('lyricsToggleBtn');
+  const panel = document.getElementById('lyricsPanel');
+  const isOpen = panel.style.display !== 'none';
+  panel.style.display = isOpen ? 'none' : '';
+  btn.classList.toggle('active', !isOpen);
+  btn.textContent = isOpen ? 'Show Lyrics' : 'Hide Lyrics';
+  if (!isOpen) updateLyricsHighlight();
+});
 
 function renderQueue(){
   document.getElementById('queueCount').textContent = `${player.order.length} song${player.order.length === 1 ? "" : "s"}`;
@@ -1781,6 +1984,7 @@ function onDragPointerUp(){
 
 function reorderQueue(fromPos, insertBeforePos){
   if (fromPos === insertBeforePos || fromPos === insertBeforePos - 1) return;
+  cancelCrossfade();
   const currentPlayingGidx = currentGidx();
   const [moved] = player.order.splice(fromPos, 1);
   const adjusted = insertBeforePos > fromPos ? insertBeforePos - 1 : insertBeforePos;
@@ -1792,6 +1996,7 @@ function reorderQueue(fromPos, insertBeforePos){
 function moveQueueItemBy(pos, delta){
   const newPos = pos + delta;
   if (newPos < 0 || newPos >= player.order.length) return;
+  cancelCrossfade();
   const currentPlayingGidx = currentGidx();
   [player.order[pos], player.order[newPos]] = [player.order[newPos], player.order[pos]];
   player.index = player.order.indexOf(currentPlayingGidx);
@@ -1815,36 +2020,7 @@ function syncLibraryHighlights(){
     const btn = tr.querySelector('.card-play-btn');
     if (btn) btn.textContent = (isCurrent && isPlaying) ? 'Playing' : 'Play';
   });
-  syncSongOfDay(gidx, isPlaying);
 }
-
-/* ---------- song of the day ---------- */
-// Deterministic per-calendar-day pick from the main (non-bonus) catalog — same
-// song for everyone on a given day, rotating through the library over time.
-function getSongOfTheDay(){
-  const pool = SONGS.filter(s => !s.bonus);
-  if (!pool.length) return null;
-  const dayIndex = Math.floor(Date.now() / 86400000);
-  return pool[dayIndex % pool.length];
-}
-
-function syncSongOfDay(currentGidxVal, isPlaying){
-  const wrap = document.getElementById('songOfDay');
-  const song = getSongOfTheDay();
-  if (!song){ wrap.style.display = 'none'; return; }
-  const gidx = SONGS.indexOf(song);
-  wrap.dataset.gidx = gidx;
-  wrap.style.display = '';
-  document.getElementById('sodName').textContent = song.name;
-  document.getElementById('sodMeta').textContent = `Created by: ${song.performer}`;
-  const isThisPlaying = currentGidxVal === gidx && isPlaying;
-  document.getElementById('sodPlayBtn').textContent = isThisPlaying ? 'Playing' : 'Play';
-}
-
-document.getElementById('sodPlayBtn').addEventListener('click', () => {
-  const gidx = parseInt(document.getElementById('songOfDay').dataset.gidx, 10);
-  if (!isNaN(gidx)) playFromLibrary(gidx);
-});
 
 /* ---------- bonus tracks rendering ---------- */
 function renderBonusView(){
