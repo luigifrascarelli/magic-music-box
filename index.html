@@ -1032,9 +1032,10 @@
     <div class="callout">
       Special collections and seasonal songs live here — separate from the main Library and Jukebox.
     </div>
+    <div class="cat-tabs" id="bonusTabs" style="display:none;"></div>
     <button class="builder-start-btn" id="bonusPlayAllBtn" type="button" style="display:none; margin-bottom:20px;">Play All — Bonus Jukebox</button>
     <div id="bonusGrid" class="grid" style="display:none;"></div>
-    <div class="empty-state" id="bonusEmpty">No bonus songs yet — check back soon! First up: a Halloween album.</div>
+    <div class="empty-state" id="bonusEmpty">No bonus songs yet — check back soon!</div>
   </div>
 
   <div id="libraryView" style="display:none;">
@@ -1205,7 +1206,6 @@
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <audio id="globalAudio" preload="none"></audio>
-<audio id="globalAudioB" preload="none"></audio>
 
 <script src="data.js"></script>
 <script>
@@ -1374,21 +1374,11 @@ function formatTime(sec){
 }
 
 /* ============================================================
-   SHARED PLAYER — two <audio> elements so songs can crossfade
-   into each other. `audio` always points at whichever element is
-   currently "live" (drives the UI, lock screen, mini-player);
-   `fadeSlot` is the other one, idle except during a crossfade.
-   Every place that reads/writes `audio.*` keeps working exactly
-   as before — the pointer just gets reassigned at the moment a
-   crossfade finishes, so nothing else needs to know it happened.
+   SHARED PLAYER — one <audio> element drives the Library play
+   buttons, the Jukebox tab, and the mini-player, so playback
+   continues uninterrupted as you switch views.
    ============================================================ */
-const slotA = document.getElementById('globalAudio');
-const slotB = document.getElementById('globalAudioB');
-let audio = slotA;
-let fadeSlot = slotB;
-
-const CROSSFADE_SEC = 3;
-let crossfadeRAF = null;
+const audio = document.getElementById('globalAudio');
 
 const mainGidx = SONGS.map((_, i) => i).filter(i => !SONGS[i].bonus);
 const player = {
@@ -1396,14 +1386,17 @@ const player = {
   order: mainGidx.slice().reverse(), // newest-added song plays first
   selected: new Set(mainGidx), // which non-bonus songs are in the main queue pool
   activePool: 'main', // 'main' or 'bonus' — decides what shuffle/order rebuilds rebuild from
+  bonusCollection: 'all', // when activePool is 'bonus': 'all', or one collection name (e.g. "Halloween")
   shuffle: false,
   repeat: false,
-  started: false,
-  crossfading: false,
-  crossfadeTargetIndex: null
+  started: false
 };
 
-function getBonusGidx(){ return SONGS.map((_, i) => i).filter(i => SONGS[i].bonus); }
+function getBonusGidx(){
+  return SONGS.map((_, i) => i).filter(i =>
+    SONGS[i].bonus && (player.bonusCollection === 'all' || SONGS[i].collection === player.bonusCollection)
+  );
+}
 
 // Builds the play order for whichever pool (main library selection, or bonus tracks)
 // is currently active, newest-added first.
@@ -1415,8 +1408,8 @@ function poolOrder(){
 function currentSong(){ return SONGS[player.order[player.index]]; }
 function currentGidx(){ return player.order[player.index]; }
 
-// Given the current position, where does auto-advance (natural end, or a
-// crossfade) go next? null means "stop — last track, repeat is off."
+// Given the current position, where does auto-advance (a song ending naturally)
+// go next? null means "stop — last track, repeat is off."
 // Manual Next/Previous button presses don't use this — they always wrap.
 function computeNextIndex(currentIndex, orderLength, repeat){
   if (orderLength <= 0) return null;
@@ -1425,11 +1418,9 @@ function computeNextIndex(currentIndex, orderLength, repeat){
 }
 
 function loadTrack(newIndex, autoplay){
-  cancelCrossfade();
   player.index = (newIndex + player.order.length) % player.order.length;
   const song = currentSong();
   audio.src = song.url;
-  audio.volume = 1;
   refreshNowPlayingUI();
   if (autoplay){
     player.started = true;
@@ -1441,6 +1432,9 @@ function loadTrack(newIndex, autoplay){
 function playFromLibrary(gidx){
   const isBonus = !!SONGS[gidx].bonus;
   player.activePool = isBonus ? 'bonus' : 'main';
+  if (isBonus && player.bonusCollection !== 'all' && SONGS[gidx].collection !== player.bonusCollection){
+    player.bonusCollection = 'all';
+  }
   if (!isBonus && !player.selected.has(gidx)){
     // Playing a main-library song that's outside the current custom queue re-includes it.
     player.selected.add(gidx);
@@ -1452,96 +1446,22 @@ function playFromLibrary(gidx){
 function togglePlayPause(){
   if (!player.started){ loadTrack(player.index, true); return; }
   if (audio.paused){ audio.play().catch(() => {}); }
-  else { cancelCrossfade(); audio.pause(); }
+  else { audio.pause(); }
 }
 
 function goNext(){ loadTrack(player.index + 1, true); }
 function goPrev(){ loadTrack(player.index - 1, true); }
 
-/* ---------- crossfade ---------- */
-function maybeStartCrossfade(){
-  if (player.crossfading) return;
-  if (!audio.duration || !isFinite(audio.duration)) return;
-  const remaining = audio.duration - audio.currentTime;
-  if (remaining > CROSSFADE_SEC || remaining <= 0) return;
-  const nextIdx = computeNextIndex(player.index, player.order.length, player.repeat);
-  if (nextIdx === null) return; // last track, repeat off — let it end normally, no next song to fade into
-  startCrossfade(nextIdx);
-}
-
-function startCrossfade(nextIdx){
-  const nextSong = SONGS[player.order[nextIdx]];
-  if (!nextSong) return;
-  player.crossfading = true;
-  player.crossfadeTargetIndex = nextIdx;
-  fadeSlot.src = nextSong.url;
-  fadeSlot.currentTime = 0;
-  fadeSlot.volume = 0;
-  fadeSlot.play().catch(() => { cancelCrossfade(); });
-
-  const outgoing = audio;
-  const incoming = fadeSlot;
-  const startTime = performance.now();
-
-  function step(now){
-    if (!player.crossfading) return; // cancelled mid-flight
-    const frac = Math.min((now - startTime) / 1000 / CROSSFADE_SEC, 1);
-    outgoing.volume = 1 - frac;
-    incoming.volume = frac;
-    if (frac >= 1){ finishCrossfade(); return; }
-    crossfadeRAF = requestAnimationFrame(step);
-  }
-  crossfadeRAF = requestAnimationFrame(step);
-}
-
-function finishCrossfade(){
-  if (crossfadeRAF) cancelAnimationFrame(crossfadeRAF);
-  crossfadeRAF = null;
-  const oldEl = audio;
-  oldEl.pause();
-  oldEl.volume = 1;
-  // Swap roles: the element that was fading in is now the live one.
-  audio = fadeSlot;
-  fadeSlot = oldEl;
-  audio.volume = 1;
-  player.index = player.crossfadeTargetIndex;
-  player.crossfading = false;
-  player.crossfadeTargetIndex = null;
-  refreshNowPlayingUI();
-}
-
-function cancelCrossfade(){
-  if (!player.crossfading){
-    fadeSlot.pause(); // in case something odd left it playing
-    return;
-  }
-  if (crossfadeRAF) cancelAnimationFrame(crossfadeRAF);
-  crossfadeRAF = null;
-  fadeSlot.pause();
-  fadeSlot.volume = 0;
-  audio.volume = 1;
-  player.crossfading = false;
-  player.crossfadeTargetIndex = null;
-}
-
-/* ---------- audio element event wiring (both slots, guarded to whichever is active) ---------- */
-function isActiveEl(el){ return el === audio; }
-
-function handleEnded(e){
-  if (!isActiveEl(e.target)) return;
-  if (player.crossfading) return; // the crossfade timer already handles the transition
+/* ---------- audio element event wiring ---------- */
+function handleEnded(){
   const nextIdx = computeNextIndex(player.index, player.order.length, player.repeat);
   if (nextIdx === null){ refreshNowPlayingUI(); return; }
   loadTrack(nextIdx, true);
 }
-function handlePlay(e){ if (isActiveEl(e.target)) refreshNowPlayingUI(); }
-function handlePause(e){ if (isActiveEl(e.target)) refreshNowPlayingUI(); }
-function handleLoadedMetadata(e){
-  if (!isActiveEl(e.target)) return;
+function handleLoadedMetadata(){
   document.getElementById('jbDurTime').textContent = formatTime(audio.duration);
 }
-function handleTimeUpdate(e){
-  if (!isActiveEl(e.target)) return;
+function handleTimeUpdate(){
   const pct = audio.duration ? (audio.currentTime / audio.duration) * 100 : 0;
   const pctStr = pct + "%";
   document.getElementById('jbProgressFill').style.width = pctStr;
@@ -1549,32 +1469,22 @@ function handleTimeUpdate(e){
   document.getElementById('jbCurTime').textContent = formatTime(audio.currentTime);
   document.getElementById('miniProgressFill').style.width = pctStr;
   updateLyricsHighlight();
-  maybeStartCrossfade();
 }
-function handleAudioError(e){
-  if (!isActiveEl(e.target)){
-    // The fade-in element failed to load — abandon the crossfade quietly,
-    // the current song just keeps playing normally to its natural end.
-    cancelCrossfade();
-    return;
-  }
+function handleAudioError(){
   if (!audio.getAttribute('src')) return;
   showToast("Couldn\u2019t play that song \u2014 check your connection and try again.");
   refreshNowPlayingUI();
 }
 
-[slotA, slotB].forEach((el) => {
-  el.addEventListener('ended', handleEnded);
-  el.addEventListener('play', handlePlay);
-  el.addEventListener('pause', handlePause);
-  el.addEventListener('loadedmetadata', handleLoadedMetadata);
-  el.addEventListener('timeupdate', handleTimeUpdate);
-  el.addEventListener('error', handleAudioError);
-});
+audio.addEventListener('ended', handleEnded);
+audio.addEventListener('play', refreshNowPlayingUI);
+audio.addEventListener('pause', refreshNowPlayingUI);
+audio.addEventListener('loadedmetadata', handleLoadedMetadata);
+audio.addEventListener('timeupdate', handleTimeUpdate);
+audio.addEventListener('error', handleAudioError);
 
 function seekFromClick(trackEl){
   trackEl.addEventListener('click', (e) => {
-    cancelCrossfade();
     const rect = trackEl.getBoundingClientRect();
     const pct = Math.min(Math.max((e.clientX - rect.left) / rect.width, 0), 1);
     if (audio.duration) audio.currentTime = pct * audio.duration;
@@ -1603,7 +1513,6 @@ function shuffleOrder(){
 }
 const shuffleBtn = document.getElementById('jbShuffleBtn');
 shuffleBtn.addEventListener('click', () => {
-  cancelCrossfade();
   player.shuffle = !player.shuffle;
   shuffleBtn.classList.toggle('active', player.shuffle);
   const current = currentGidx();
@@ -1727,8 +1636,7 @@ function updateMediaSession(song, isPlaying){
   navigator.mediaSession.playbackState = isPlaying ? 'playing' : 'paused';
 }
 
-function updateMediaPosition(e){
-  if (e && e.target !== audio) return;
+function updateMediaPosition(){
   if (!('mediaSession' in navigator) || !navigator.mediaSession.setPositionState) return;
   if (!isFinite(audio.duration) || audio.duration <= 0) return;
   try {
@@ -1739,9 +1647,7 @@ function updateMediaPosition(e){
     });
   } catch (e) {}
 }
-[slotA, slotB].forEach((el) => {
-  ['loadedmetadata', 'play', 'pause', 'seeked'].forEach((evt) => el.addEventListener(evt, updateMediaPosition));
-});
+['loadedmetadata', 'play', 'pause', 'seeked'].forEach((evt) => audio.addEventListener(evt, updateMediaPosition));
 
 // iOS shows either "skip 10s" buttons or "next/previous track" buttons on the lock screen.
 // Registering seek handlers hides the track buttons, so we only register play/pause/next/previous
@@ -1759,7 +1665,7 @@ function applyMediaHandlers(){
   set('seekto', null);
 }
 function initMediaSessionHandlers(){ applyMediaHandlers(); }
-[slotA, slotB].forEach((el) => el.addEventListener('play', (e) => { if (e.target === audio) applyMediaHandlers(); }));
+audio.addEventListener('play', applyMediaHandlers);
 
 /* ---------- friendly message if a song can't load ---------- */
 let toastTimer = null;
@@ -1984,7 +1890,6 @@ function onDragPointerUp(){
 
 function reorderQueue(fromPos, insertBeforePos){
   if (fromPos === insertBeforePos || fromPos === insertBeforePos - 1) return;
-  cancelCrossfade();
   const currentPlayingGidx = currentGidx();
   const [moved] = player.order.splice(fromPos, 1);
   const adjusted = insertBeforePos > fromPos ? insertBeforePos - 1 : insertBeforePos;
@@ -1996,7 +1901,6 @@ function reorderQueue(fromPos, insertBeforePos){
 function moveQueueItemBy(pos, delta){
   const newPos = pos + delta;
   if (newPos < 0 || newPos >= player.order.length) return;
-  cancelCrossfade();
   const currentPlayingGidx = currentGidx();
   [player.order[pos], player.order[newPos]] = [player.order[newPos], player.order[pos]];
   player.index = player.order.indexOf(currentPlayingGidx);
@@ -2023,11 +1927,43 @@ function syncLibraryHighlights(){
 }
 
 /* ---------- bonus tracks rendering ---------- */
+// Collection names come straight from each bonus song's `collection` field,
+// in the order they first appear — add a song with a new collection and a new tab appears.
+function getBonusCollections(){
+  const names = [];
+  SONGS.forEach(s => { if (s.bonus && s.collection && !names.includes(s.collection)) names.push(s.collection); });
+  return names;
+}
+
+let bonusViewCollection = 'all';
+
+function renderBonusTabs(collections){
+  const tabs = document.getElementById('bonusTabs');
+  tabs.innerHTML = "";
+  if (collections.length < 2){ tabs.style.display = 'none'; return; } // one collection: tabs would be redundant
+  tabs.style.display = '';
+  ['all', ...collections].forEach(key => {
+    const btn = document.createElement('button');
+    btn.className = "cat-tab" + (bonusViewCollection === key ? " active" : "");
+    btn.textContent = key === 'all' ? 'All' : key;
+    btn.addEventListener('click', () => { bonusViewCollection = key; renderBonusView(); });
+    tabs.appendChild(btn);
+  });
+}
+
 function renderBonusView(){
-  const bonusSongs = SONGS.filter(s => s.bonus).slice().reverse();
+  const collections = getBonusCollections();
+  if (collections.length < 2 || (bonusViewCollection !== 'all' && !collections.includes(bonusViewCollection))){
+    bonusViewCollection = 'all'; // selected collection no longer exists (or there's nothing to choose between)
+  }
+  const bonusSongs = SONGS
+    .filter(s => s.bonus && (bonusViewCollection === 'all' || s.collection === bonusViewCollection))
+    .slice().reverse();
   const grid = document.getElementById('bonusGrid');
   const playAllBtn = document.getElementById('bonusPlayAllBtn');
   const empty = document.getElementById('bonusEmpty');
+
+  renderBonusTabs(collections);
 
   if (!bonusSongs.length){
     grid.style.display = 'none';
@@ -2037,6 +1973,7 @@ function renderBonusView(){
   }
   empty.style.display = 'none';
   playAllBtn.style.display = '';
+  playAllBtn.textContent = bonusViewCollection === 'all' ? 'Play All — Bonus Jukebox' : `Play All — ${bonusViewCollection}`;
   grid.style.display = 'grid';
   grid.innerHTML = "";
   bonusSongs.forEach(song => {
@@ -2056,7 +1993,10 @@ function renderBonusView(){
         <a class="download-link" href="${song.url}" download title="Download ${song.name}" aria-label="Download ${song.name}">${ICON_DOWNLOAD}</a>
       </div>
     `;
-    card.querySelector('.card-play-btn').addEventListener('click', () => playFromLibrary(gidx));
+    card.querySelector('.card-play-btn').addEventListener('click', () => {
+      player.bonusCollection = bonusViewCollection;
+      playFromLibrary(gidx);
+    });
     grid.appendChild(card);
   });
   syncLibraryHighlights();
@@ -2064,6 +2004,7 @@ function renderBonusView(){
 
 document.getElementById('bonusPlayAllBtn').addEventListener('click', () => {
   player.activePool = 'bonus';
+  player.bonusCollection = bonusViewCollection;
   player.order = player.shuffle ? shuffleOrder() : poolOrder();
   loadTrack(0, true);
 });
