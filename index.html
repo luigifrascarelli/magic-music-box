@@ -954,6 +954,32 @@
 
   <div id="homeView">
     <div class="home-tiles">
+      <button class="home-tile" id="tileHalloween" type="button">
+        <span class="home-tile-badge">New</span>
+        <svg viewBox="0 0 120 84" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="tileHalloweenGrad" x1="0" y1="0" x2="120" y2="84" gradientUnits="userSpaceOnUse">
+              <stop offset="0%" stop-color="#ff2fd6"/>
+              <stop offset="50%" stop-color="#b967ff"/>
+              <stop offset="100%" stop-color="#33d9ff"/>
+            </linearGradient>
+          </defs>
+          <path d="M60 24C40 18 12 28 12 50C12 69 36 79 60 77C84 79 108 69 108 50C108 28 80 18 60 24Z" stroke="url(#tileHalloweenGrad)" stroke-width="3.5" stroke-linejoin="round"/>
+          <path d="M33 26C19 38 21 62 34 74" stroke="url(#tileHalloweenGrad)" stroke-width="2.5" stroke-linecap="round" opacity="0.5"/>
+          <path d="M87 26C101 38 99 62 86 74" stroke="url(#tileHalloweenGrad)" stroke-width="2.5" stroke-linecap="round" opacity="0.5"/>
+          <path d="M54 24L57 11L68 9L66 24" stroke="url(#tileHalloweenGrad)" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+          <path d="M68 13C78 5 91 9 89 17C87 23 79 21 81 16" stroke="url(#tileHalloweenGrad)" stroke-width="2.5" stroke-linecap="round"/>
+          <path d="M33 47L45 47L39 35Z" stroke="url(#tileHalloweenGrad)" stroke-width="3" stroke-linejoin="round"/>
+          <path d="M75 47L87 47L81 35Z" stroke="url(#tileHalloweenGrad)" stroke-width="3" stroke-linejoin="round"/>
+          <path d="M56 55L64 55L60 49Z" stroke="url(#tileHalloweenGrad)" stroke-width="2.5" stroke-linejoin="round"/>
+          <path d="M34 59L42 67L50 60L60 68L70 60L78 67L86 59Z" stroke="url(#tileHalloweenGrad)" stroke-width="3" stroke-linejoin="round"/>
+          <path d="M14 12L16 18L22 20L16 22L14 28L12 22L6 20L12 18Z" fill="url(#tileHalloweenGrad)" opacity="0.85"/>
+          <path d="M104 8L105.5 12.5L110 14L105.5 15.5L104 20L102.5 15.5L98 14L102.5 12.5Z" fill="url(#tileHalloweenGrad)" opacity="0.85"/>
+        </svg>
+        <div class="home-tile-title">Halloween Album</div>
+        <div class="home-tile-sub">Every spooky song, all in one place</div>
+      </button>
+
       <button class="home-tile" id="tileJukebox" type="button">
         <svg viewBox="0 0 120 84" fill="none" xmlns="http://www.w3.org/2000/svg">
           <defs>
@@ -1036,6 +1062,20 @@
     <button class="builder-start-btn" id="bonusPlayAllBtn" type="button" style="display:none; margin-bottom:20px;">Play All — Bonus Jukebox</button>
     <div id="bonusGrid" class="grid" style="display:none;"></div>
     <div class="empty-state" id="bonusEmpty">No bonus songs yet — check back soon!</div>
+  </div>
+
+  <div id="halloweenView" style="display:none;">
+    <div class="builder-header">
+      <button class="builder-back" id="halloweenBackBtn" type="button" aria-label="Back to home">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <h2>Halloween Album</h2>
+    </div>
+    <div class="callout">
+      Happy Halloween! Every spooky song in one place — tap the button to start the party.
+    </div>
+    <button class="builder-start-btn" id="halloweenPlayAllBtn" type="button" style="margin-bottom:20px;">Play the Whole Album</button>
+    <div id="halloweenGrid" class="grid"></div>
   </div>
 
   <div id="libraryView" style="display:none;">
@@ -1306,6 +1346,7 @@ const libraryView = document.getElementById('libraryView');
 const jukeboxView = document.getElementById('jukeboxView');
 const builderView = document.getElementById('builderView');
 const bonusView = document.getElementById('bonusView');
+const halloweenView = document.getElementById('halloweenView');
 
 function switchTab(tab){
   homeView.style.display = tab === 'home' ? '' : 'none';
@@ -1313,6 +1354,7 @@ function switchTab(tab){
   jukeboxView.style.display = tab === 'jukebox' ? '' : 'none';
   builderView.style.display = tab === 'builder' ? '' : 'none';
   bonusView.style.display = tab === 'bonus' ? '' : 'none';
+  halloweenView.style.display = tab === 'halloween' ? '' : 'none';
   navPill.style.display = (tab === 'home' || tab === 'builder') ? 'none' : 'inline-flex';
   navLibrary.classList.toggle('active', tab === 'library');
   navJukebox.classList.toggle('active', tab === 'jukebox');
@@ -1324,6 +1366,8 @@ navBonus.addEventListener('click', () => switchTab('bonus'));
 document.getElementById('tileLibrary').addEventListener('click', () => switchTab('library'));
 document.getElementById('tileJukebox').addEventListener('click', goToJukebox);
 document.getElementById('tileBonus').addEventListener('click', () => switchTab('bonus'));
+document.getElementById('tileHalloween').addEventListener('click', () => switchTab('halloween'));
+document.getElementById('halloweenBackBtn').addEventListener('click', () => switchTab('home'));
 document.getElementById('bonusBackBtn').addEventListener('click', () => switchTab('home'));
 document.getElementById('headerBrand').addEventListener('click', () => switchTab('home'));
 
@@ -1910,7 +1954,7 @@ function moveQueueItemBy(pos, delta){
 function syncLibraryHighlights(){
   const gidx = currentGidx();
   const isPlaying = player.started && !audio.paused;
-  document.querySelectorAll('#gridView .card, #bonusGrid .card').forEach(card => {
+  document.querySelectorAll('#gridView .card, #bonusGrid .card, #halloweenGrid .card').forEach(card => {
     const isCurrent = parseInt(card.dataset.gidx, 10) === gidx;
     card.classList.toggle('playing', isCurrent && isPlaying);
     const btn = card.querySelector('.card-play-btn');
@@ -1927,6 +1971,55 @@ function syncLibraryHighlights(){
 }
 
 /* ---------- bonus tracks rendering ---------- */
+// One song card, used by both the Bonus Tracks grid and the Halloween Album grid.
+function buildBonusCard(song, onPlay){
+  const gidx = SONGS.indexOf(song);
+  const card = document.createElement('div');
+  card.className = "card";
+  card.dataset.gidx = gidx;
+  const moodChips = song.mood.map(m => `<span class="pill pill-mood" style="--mood-c:${MOOD_COLORS[m]}">${m}</span>`).join("");
+  card.innerHTML = `
+    <div class="card-duration">${song.dur}</div>
+    <div class="card-name">${song.name} <span class="mini-eq" style="display:none;">${EQ_HTML}</span></div>
+    <div class="card-meta"><b>Created by:</b> ${song.performer}</div>
+    <div class="card-notes">${song.notes}</div>
+    <div class="card-chips">${moodChips}${song.occasion ? `<span class="pill pill-occasion">${song.occasion}</span>` : ""}</div>
+    <div class="player-row">
+      <button class="card-play-btn" type="button" aria-label="Play ${song.name}">Play</button>
+      <a class="download-link" href="${song.url}" download title="Download ${song.name}" aria-label="Download ${song.name}">${ICON_DOWNLOAD}</a>
+    </div>
+  `;
+  card.querySelector('.card-play-btn').addEventListener('click', () => onPlay(gidx));
+  return card;
+}
+
+/* ---------- Halloween Album ---------- */
+// Everything tagged collection: "Halloween" — a dedicated, party-ready view of the same songs
+// that also live in Bonus Tracks.
+const HALLOWEEN_COLLECTION = 'Halloween';
+
+function renderHalloweenView(){
+  const songs = SONGS.filter(s => s.bonus && s.collection === HALLOWEEN_COLLECTION).slice().reverse();
+  const grid = document.getElementById('halloweenGrid');
+  const playAll = document.getElementById('halloweenPlayAllBtn');
+  grid.innerHTML = "";
+  playAll.style.display = songs.length ? '' : 'none';
+  songs.forEach(song => {
+    grid.appendChild(buildBonusCard(song, (gidx) => {
+      player.bonusCollection = HALLOWEEN_COLLECTION;
+      playFromLibrary(gidx);
+    }));
+  });
+  syncLibraryHighlights();
+}
+
+document.getElementById('halloweenPlayAllBtn').addEventListener('click', () => {
+  player.activePool = 'bonus';
+  player.bonusCollection = HALLOWEEN_COLLECTION;
+  player.order = player.shuffle ? shuffleOrder() : poolOrder();
+  loadTrack(0, true);
+});
+
 // Collection names come straight from each bonus song's `collection` field,
 // in the order they first appear — add a song with a new collection and a new tab appears.
 function getBonusCollections(){
@@ -1977,27 +2070,10 @@ function renderBonusView(){
   grid.style.display = 'grid';
   grid.innerHTML = "";
   bonusSongs.forEach(song => {
-    const gidx = SONGS.indexOf(song);
-    const card = document.createElement('div');
-    card.className = "card";
-    card.dataset.gidx = gidx;
-    const moodChips = song.mood.map(m => `<span class="pill pill-mood" style="--mood-c:${MOOD_COLORS[m]}">${m}</span>`).join("");
-    card.innerHTML = `
-      <div class="card-duration">${song.dur}</div>
-      <div class="card-name">${song.name} <span class="mini-eq" style="display:none;">${EQ_HTML}</span></div>
-      <div class="card-meta"><b>Created by:</b> ${song.performer}</div>
-      <div class="card-notes">${song.notes}</div>
-      <div class="card-chips">${moodChips}${song.occasion ? `<span class="pill pill-occasion">${song.occasion}</span>` : ""}</div>
-      <div class="player-row">
-        <button class="card-play-btn" type="button" aria-label="Play ${song.name}">Play</button>
-        <a class="download-link" href="${song.url}" download title="Download ${song.name}" aria-label="Download ${song.name}">${ICON_DOWNLOAD}</a>
-      </div>
-    `;
-    card.querySelector('.card-play-btn').addEventListener('click', () => {
+    grid.appendChild(buildBonusCard(song, (gidx) => {
       player.bonusCollection = bonusViewCollection;
       playFromLibrary(gidx);
-    });
-    grid.appendChild(card);
+    }));
   });
   syncLibraryHighlights();
 }
@@ -2092,6 +2168,7 @@ document.getElementById('tableBtn').addEventListener('click', () => {
 initMediaSessionHandlers();
 renderAll();
 renderBonusView();
+renderHalloweenView();
 loadTrack(0, false); // preload first track's info into Jukebox/mini-player without playing
 
 /* ---------- service worker (installability + offline app shell + offline songs) ---------- */
