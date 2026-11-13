@@ -921,6 +921,7 @@
         <button class="nav-pill-btn" id="navLibrary" type="button">Library</button>
         <button class="nav-pill-btn" id="navJukebox" type="button">Jukebox</button>
         <button class="nav-pill-btn" id="navBonus" type="button">Bonus</button>
+        <button class="nav-pill-btn" id="navSpanish" type="button">Español</button>
       </div>
       <button class="theme-toggle" id="themeToggle" type="button" aria-label="Switch to light theme"></button>
     </div>
@@ -1019,6 +1020,32 @@
         <div class="home-tile-title">Bonus Tracks</div>
         <div class="home-tile-sub">Special collections &amp; seasonal songs</div>
       </button>
+
+      <button class="home-tile" id="tileSpanish" type="button">
+        <span class="home-tile-badge">Bonus</span>
+        <svg viewBox="0 0 120 84" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="tileEsGrad" x1="0" y1="0" x2="120" y2="84" gradientUnits="userSpaceOnUse">
+              <stop offset="0%" stop-color="#ff2fd6"/>
+              <stop offset="50%" stop-color="#b967ff"/>
+              <stop offset="100%" stop-color="#33d9ff"/>
+            </linearGradient>
+          </defs>
+          <rect x="3" y="3" width="114" height="78" rx="10" stroke="url(#tileEsGrad)" stroke-width="3.5"/>
+          <circle cx="48" cy="42" r="31" stroke="url(#tileEsGrad)" stroke-width="3"/>
+          <circle cx="48" cy="42" r="17" stroke="url(#tileEsGrad)" stroke-width="2.5"/>
+          <text x="48" y="43" text-anchor="middle" dominant-baseline="central" font-family="Audiowide, sans-serif" font-size="9" fill="url(#tileEsGrad)">Hola</text>
+          <rect x="93" y="9" width="9" height="8" rx="1.5" stroke="url(#tileEsGrad)" stroke-width="2.5"/>
+          <circle cx="97.5" cy="24" r="7" stroke="url(#tileEsGrad)" stroke-width="2.5"/>
+          <circle cx="97.5" cy="24" r="2.2" stroke="url(#tileEsGrad)" stroke-width="2"/>
+          <path d="M97.5 31V52Q97.5 60 89 66" stroke="url(#tileEsGrad)" stroke-width="2.5" stroke-linecap="round"/>
+          <rect x="80" y="64" width="9" height="6" rx="1.5" transform="rotate(-40 84.5 67)" stroke="url(#tileEsGrad)" stroke-width="2.5"/>
+          <rect x="106" y="58" width="4.5" height="17" rx="2.2" stroke="url(#tileEsGrad)" stroke-width="2.2"/>
+          <circle cx="13" cy="71" r="4.5" stroke="url(#tileEsGrad)" stroke-width="2.2"/>
+        </svg>
+        <div class="home-tile-title">Español</div>
+        <div class="home-tile-sub">Canciones en español &middot; Spanish songs</div>
+      </button>
     </div>
   </div>
 
@@ -1036,6 +1063,23 @@
     <button class="builder-start-btn" id="bonusPlayAllBtn" type="button" style="display:none; margin-bottom:20px;">Play All — Bonus Jukebox</button>
     <div id="bonusGrid" class="grid" style="display:none;"></div>
     <div class="empty-state" id="bonusEmpty">No bonus songs yet — check back soon!</div>
+  </div>
+
+
+  <div id="spanishView" style="display:none;">
+    <div class="builder-header">
+      <button class="builder-back" id="spanishBackBtn" type="button" aria-label="Back to home">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <h2>Español</h2>
+    </div>
+    <div class="callout">
+      Canciones en español — bonus songs, separate from the main Library. Play them here, or add them to the main Jukebox.
+    </div>
+    <button class="builder-start-btn" id="spanishPlayAllBtn" type="button" style="display:none; margin-bottom:12px;">Play All — Jukebox en Español</button>
+    <button class="builder-quick-btn" id="spanishInMainBtn" type="button" style="display:none; margin-bottom:20px;"></button>
+    <div id="spanishGrid" class="grid" style="display:none;"></div>
+    <div class="empty-state" id="spanishEmpty">No Spanish songs yet — check back soon!</div>
   </div>
 
   <div id="libraryView" style="display:none;">
@@ -1073,6 +1117,14 @@
   </div><!-- /libraryView -->
 
   <div id="jukeboxView" style="display:none;">
+
+    <div class="jb-context" id="jbContext" style="display:none; align-items:center; gap:10px; margin-bottom:12px;">
+      <button class="builder-back" id="jbContextBack" type="button" aria-label="Back to Español">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <span class="bonus-tag" style="margin-left:0;">Español</span>
+      <span style="font-size:13px; color:var(--text-2);">Jukebox en Español</span>
+    </div>
 
     <div class="jukebox-panel">
       <div class="cassette-visual">
@@ -1306,21 +1358,37 @@ const libraryView = document.getElementById('libraryView');
 const jukeboxView = document.getElementById('jukeboxView');
 const builderView = document.getElementById('builderView');
 const bonusView = document.getElementById('bonusView');
+const spanishView = document.getElementById('spanishView');
+const navSpanish = document.getElementById('navSpanish');
+let currentTab = 'home';
+
+// Nav highlight follows the view, and (for the shared Jukebox view) whichever queue is loaded.
+function syncNav(){
+  const spanishQueue = player.activePool === 'spanish';
+  navLibrary.classList.toggle('active', currentTab === 'library');
+  navJukebox.classList.toggle('active', currentTab === 'jukebox' && !spanishQueue);
+  navBonus.classList.toggle('active', currentTab === 'bonus');
+  navSpanish.classList.toggle('active', currentTab === 'spanish' || (currentTab === 'jukebox' && spanishQueue));
+}
 
 function switchTab(tab){
+  currentTab = tab;
+  spanishView.style.display = tab === 'spanish' ? '' : 'none';
   homeView.style.display = tab === 'home' ? '' : 'none';
   libraryView.style.display = tab === 'library' ? '' : 'none';
   jukeboxView.style.display = tab === 'jukebox' ? '' : 'none';
   builderView.style.display = tab === 'builder' ? '' : 'none';
   bonusView.style.display = tab === 'bonus' ? '' : 'none';
   navPill.style.display = (tab === 'home' || tab === 'builder') ? 'none' : 'inline-flex';
-  navLibrary.classList.toggle('active', tab === 'library');
-  navJukebox.classList.toggle('active', tab === 'jukebox');
-  navBonus.classList.toggle('active', tab === 'bonus');
+  syncNav();
 }
 navLibrary.addEventListener('click', () => switchTab('library'));
 navJukebox.addEventListener('click', goToJukebox);
 navBonus.addEventListener('click', () => switchTab('bonus'));
+navSpanish.addEventListener('click', () => switchTab('spanish'));
+document.getElementById('tileSpanish').addEventListener('click', () => switchTab('spanish'));
+document.getElementById('spanishBackBtn').addEventListener('click', () => switchTab('home'));
+document.getElementById('jbContextBack').addEventListener('click', () => switchTab('spanish'));
 document.getElementById('tileLibrary').addEventListener('click', () => switchTab('library'));
 document.getElementById('tileJukebox').addEventListener('click', goToJukebox);
 document.getElementById('tileBonus').addEventListener('click', () => switchTab('bonus'));
@@ -1361,8 +1429,11 @@ function renderCatTabs(){
   });
 }
 
+// Main-library songs: not a Bonus Tracks song and not in a separate section (e.g. "spanish").
+const isMainSong = s => !s.bonus && !s.section;
+
 function getFiltered(){
-  const base = SONGS.filter(s => !s.bonus);
+  const base = SONGS.filter(isMainSong);
   return state.activeCategory === "all" ? base : base.filter(s => s.category.includes(state.activeCategory));
 }
 
@@ -1380,12 +1451,13 @@ function formatTime(sec){
    ============================================================ */
 const audio = document.getElementById('globalAudio');
 
-const mainGidx = SONGS.map((_, i) => i).filter(i => !SONGS[i].bonus);
+const mainGidx = SONGS.map((_, i) => i).filter(i => isMainSong(SONGS[i]));
+const spanishGidx = SONGS.map((_, i) => i).filter(i => SONGS[i].section === 'spanish');
 const player = {
   index: 0,
   order: mainGidx.slice().reverse(), // newest-added song plays first
   selected: new Set(mainGidx), // which non-bonus songs are in the main queue pool
-  activePool: 'main', // 'main' or 'bonus' — decides what shuffle/order rebuilds rebuild from
+  activePool: 'main', // 'main', 'bonus' or 'spanish' — decides what shuffle/order rebuilds rebuild from
   bonusCollection: 'all', // when activePool is 'bonus': 'all', or one collection name (e.g. "Halloween")
   shuffle: false,
   repeat: false,
@@ -1400,9 +1472,14 @@ function getBonusGidx(){
 
 // Builds the play order for whichever pool (main library selection, or bonus tracks)
 // is currently active, newest-added first.
+// In the main pool, any Spanish songs the listener opted in go after everything else.
 function poolOrder(){
-  const poolSet = player.activePool === 'bonus' ? new Set(getBonusGidx()) : player.selected;
-  return SONGS.map((_, i) => i).filter(i => poolSet.has(i)).reverse();
+  let poolSet;
+  if (player.activePool === 'bonus') poolSet = new Set(getBonusGidx());
+  else if (player.activePool === 'spanish') poolSet = new Set(spanishGidx);
+  else poolSet = player.selected;
+  const ids = SONGS.map((_, i) => i).filter(i => poolSet.has(i));
+  return [...ids.filter(i => !SONGS[i].section).reverse(), ...ids.filter(i => SONGS[i].section).reverse()];
 }
 
 function currentSong(){ return SONGS[player.order[player.index]]; }
@@ -1431,11 +1508,12 @@ function loadTrack(newIndex, autoplay){
 
 function playFromLibrary(gidx){
   const isBonus = !!SONGS[gidx].bonus;
-  player.activePool = isBonus ? 'bonus' : 'main';
+  const isSpanish = SONGS[gidx].section === 'spanish';
+  player.activePool = isSpanish ? 'spanish' : (isBonus ? 'bonus' : 'main');
   if (isBonus && player.bonusCollection !== 'all' && SONGS[gidx].collection !== player.bonusCollection){
     player.bonusCollection = 'all';
   }
-  if (!isBonus && !player.selected.has(gidx)){
+  if (!isBonus && !isSpanish && !player.selected.has(gidx)){
     // Playing a main-library song that's outside the current custom queue re-includes it.
     player.selected.add(gidx);
   }
@@ -1538,7 +1616,7 @@ function openBuilder(){
 }
 document.getElementById('openBuilderBtn').addEventListener('click', openBuilder);
 
-const BUILDER_TABS = [...CATEGORIES, { key: "bonus", label: "Bonus Tracks" }];
+const BUILDER_TABS = [...CATEGORIES, { key: "bonus", label: "Bonus Tracks" }, { key: "spanish", label: "Español" }];
 
 function renderBuilderCatTabs(){
   const wrap = document.getElementById('builderCatTabs');
@@ -1564,8 +1642,10 @@ function renderBuilder(){
   let base;
   if (builderCategory === "bonus"){
     base = SONGS.filter(s => s.bonus);
+  } else if (builderCategory === "spanish"){
+    base = SONGS.filter(s => s.section === 'spanish');
   } else {
-    base = SONGS.filter(s => !s.bonus);
+    base = SONGS.filter(isMainSong);
     if (builderCategory !== "all") base = base.filter(s => s.category.includes(builderCategory));
   }
   const filtered = base.slice().reverse();
@@ -1581,7 +1661,7 @@ function renderBuilder(){
       item.innerHTML = `
         <input type="checkbox" ${checked ? "checked" : ""}>
         <div class="builder-info">
-          <div class="builder-name">${song.name}${song.bonus ? '<span class="bonus-tag">Bonus</span>' : ""}</div>
+          <div class="builder-name">${song.name}${song.bonus ? '<span class="bonus-tag">Bonus</span>' : ""}${song.section === 'spanish' ? '<span class="bonus-tag">Español</span>' : ""}</div>
           <div class="builder-sub">${song.performer} · ${song.dur}</div>
         </div>
       `;
@@ -1691,6 +1771,11 @@ function refreshNowPlayingUI(){
   document.getElementById('miniArtist').textContent = song.performer;
   document.getElementById('miniPlayIcon').innerHTML = isPlaying ? ICON_PAUSE_PATH : ICON_PLAY_PATH;
   document.getElementById('miniReel').classList.toggle('spinning', isPlaying);
+
+  const spanishQueue = player.activePool === 'spanish';
+  document.getElementById('jbContext').style.display = spanishQueue ? 'flex' : 'none';
+  document.getElementById('openBuilderBtn').style.display = spanishQueue ? 'none' : '';
+  syncNav();
 
   updateMediaSession(song, isPlaying);
   renderLyricsForSong(song);
@@ -1805,7 +1890,7 @@ function renderQueue(){
       <div class="queue-index">${pos + 1}</div>
       <div class="queue-eq">${EQ_HTML}</div>
       <div class="queue-info">
-        <div class="queue-name">${song.name}${song.bonus ? '<span class="bonus-tag">Bonus</span>' : ""}</div>
+        <div class="queue-name">${song.name}${song.bonus ? '<span class="bonus-tag">Bonus</span>' : ""}${song.section === 'spanish' ? '<span class="bonus-tag">Español</span>' : ""}</div>
         <div class="queue-sub">${song.performer}</div>
       </div>
       <div class="queue-dur">${song.dur}</div>
@@ -1910,7 +1995,7 @@ function moveQueueItemBy(pos, delta){
 function syncLibraryHighlights(){
   const gidx = currentGidx();
   const isPlaying = player.started && !audio.paused;
-  document.querySelectorAll('#gridView .card, #bonusGrid .card').forEach(card => {
+  document.querySelectorAll('#gridView .card, #bonusGrid .card, #spanishGrid .card').forEach(card => {
     const isCurrent = parseInt(card.dataset.gidx, 10) === gidx;
     card.classList.toggle('playing', isCurrent && isPlaying);
     const btn = card.querySelector('.card-play-btn');
@@ -2014,6 +2099,60 @@ document.getElementById('bonusPlayAllBtn').addEventListener('click', () => {
   loadTrack(0, true);
 });
 
+
+/* ---------- Español: its own page + jukebox queue, optionally merged into the main Jukebox ---------- */
+function spanishInMain(){
+  return spanishGidx.length > 0 && spanishGidx.every(g => player.selected.has(g));
+}
+
+// Opt Spanish songs in/out of the main Jukebox queue without interrupting playback.
+function setSpanishInMain(on){
+  const cur = player.order.length ? currentGidx() : null;
+  spanishGidx.forEach(g => on ? player.selected.add(g) : player.selected.delete(g));
+  if (player.activePool === 'main'){
+    if (on){
+      const missing = spanishGidx.filter(g => !player.order.includes(g)).reverse();
+      player.order = [...player.order, ...missing];
+    } else {
+      player.order = player.order.filter(g => SONGS[g].section !== 'spanish' || g === cur);
+    }
+    player.index = Math.max(0, player.order.indexOf(cur));
+    renderQueue();
+  }
+  renderSpanishView();
+  showToast(on ? 'Spanish songs added to the main Jukebox.' : 'Spanish songs removed from the main Jukebox.');
+}
+
+function renderSpanishView(){
+  const songs = spanishGidx.map(g => SONGS[g]).reverse();
+  const grid = document.getElementById('spanishGrid');
+  const playAll = document.getElementById('spanishPlayAllBtn');
+  const inMainBtn = document.getElementById('spanishInMainBtn');
+  const empty = document.getElementById('spanishEmpty');
+  if (!songs.length){
+    grid.style.display = 'none'; playAll.style.display = 'none'; inMainBtn.style.display = 'none';
+    empty.style.display = '';
+    return;
+  }
+  empty.style.display = 'none';
+  playAll.style.display = '';
+  inMainBtn.style.display = '';
+  inMainBtn.textContent = spanishInMain() ? 'In the main Jukebox \u2014 tap to remove' : 'Add all to the main Jukebox';
+  inMainBtn.classList.toggle('active', spanishInMain());
+  grid.style.display = 'grid';
+  grid.innerHTML = '';
+  songs.forEach(song => grid.appendChild(buildBonusCard(song, (gidx) => playFromLibrary(gidx))));
+  syncLibraryHighlights();
+}
+
+document.getElementById('spanishPlayAllBtn').addEventListener('click', () => {
+  player.activePool = 'spanish';
+  player.order = player.shuffle ? shuffleOrder() : poolOrder();
+  loadTrack(0, true);
+  switchTab('jukebox');
+});
+document.getElementById('spanishInMainBtn').addEventListener('click', () => setSpanishInMain(!spanishInMain()));
+
 /* ---------- library rendering ---------- */
 function renderGrid(list){
   const grid = document.getElementById('gridView');
@@ -2097,6 +2236,7 @@ document.getElementById('tableBtn').addEventListener('click', () => {
 initMediaSessionHandlers();
 renderAll();
 renderBonusView();
+renderSpanishView();
 loadTrack(0, false); // preload first track's info into Jukebox/mini-player without playing
 
 /* ---------- service worker (installability + offline app shell + offline songs) ---------- */
