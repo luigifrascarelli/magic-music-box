@@ -13,7 +13,8 @@ const MOOD_COLORS = {
   "Letters & Counting": "#ff6ec7",
   "Lullaby": "#6f7bff",
   "Sing-Along": "#d633ff",
-  "Educational": "#3f8fff"
+  "Educational": "#3f8fff",
+  "Inspirational": "#ffb347"
 };
 
 // Tabs shown at the top of the page. "all" is required —
@@ -94,5 +95,11 @@ const SONGS = [
 { dur: "4:06", sortDur: "0406", name: "Los Planetas", url: "songs/los-planetas.mp3", performer: "DJ Circle Time ft. Pre-K Orange", notes: "A Spanish dance song about the eight planets in order, from Mercurio to Neptuno.", mood: ["Educational", "Movement & Dance"], occasion: "", category: ["educational","movement"], section: "spanish" },
 { dur: "3:07", sortDur: "0307", name: "Fuerte y Valiente", url: "songs/fuerte-y-valiente.mp3", performer: "DJ Circle Time ft. Pre-K Orange", notes: "A bouncy Spanish dance song about being strong, brave, and kind.", mood: ["Movement & Dance", "Sing-Along"], occasion: "", category: ["movement"], section: "spanish" },
 { dur: "2:01", sortDur: "0201", name: "Cuenta Conmigo", url: "songs/cuenta-conmigo.mp3", performer: "DJ Circle Time ft. Pre-K Orange", notes: "A Spanish counting and adding song, from uno to diez.", mood: ["Letters & Counting", "Educational"], occasion: "", category: ["letters","educational"], section: "spanish" },
-{ dur: "2:25", sortDur: "0225", name: "Sapo Saltarín", url: "songs/sapo-saltarin.mp3", performer: "DJ Circle Time ft. Pre-K Orange", notes: "A silly Spanish song full of S words, starring a jumping toad.", mood: ["Letters & Counting", "Silly & Giggles"], occasion: "", category: ["letters","silly"], section: "spanish" }
+{ dur: "2:25", sortDur: "0225", name: "Sapo Saltarín", url: "songs/sapo-saltarin.mp3", performer: "DJ Circle Time ft. Pre-K Orange", notes: "A silly Spanish song full of S words, starring a jumping toad.", mood: ["Letters & Counting", "Silly & Giggles"], occasion: "", category: ["letters","silly"], section: "spanish" },
+{ dur: "3:22", sortDur: "0322", name: "Dino Stomp", url: "songs/dino-stomp.mp3", performer: "DJ Circle Time ft. Pre-K Orange", notes: "A silly dinosaur stomping song.", mood: ["Educational", "Silly & Giggles"], occasion: "", category: ["educational","silly"] },
+{ dur: "2:25", sortDur: "0225", name: "Come Dance with D", url: "songs/come-dance-with-d.mp3", performer: "DJ Circle Time ft. Pre-K Orange", notes: "A silly dance-along song.", mood: ["Educational", "Silly & Giggles"], occasion: "", category: ["educational","silly"] },
+{ dur: "2:56", sortDur: "0256", name: "Siento Orgullo", url: "songs/siento-orgullo.mp3", performer: "DJ Circle Time ft. Pre-K Orange", notes: "An inspirational Spanish song about feeling proud.", mood: ["Inspirational"], occasion: "", category: [], section: "spanish" },
+{ dur: "2:21", sortDur: "0221", name: "Cosas Grandes", url: "songs/cosas-grandes.mp3", performer: "DJ Circle Time ft. Pre-K Orange", notes: "An inspirational Spanish song about big things.", mood: ["Inspirational"], occasion: "", category: [], section: "spanish" },
+{ dur: "2:07", sortDur: "0207", name: "Soy Especial", url: "songs/soy-especial.mp3", performer: "DJ Circle Time ft. Pre-K Orange", notes: "An inspirational Spanish song about being special.", mood: ["Inspirational"], occasion: "", category: [], section: "spanish" },
+{ dur: "3:06", sortDur: "0306", name: "Friendgiving", url: "songs/friendgiving.mp3", performer: "DJ Circle Time ft. Pre-K Orange", notes: "A Thanksgiving celebration song to share with friends.", mood: ["Sing-Along"], occasion: "Thanksgiving", category: [] }
 ];
