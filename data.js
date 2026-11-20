@@ -101,5 +101,5 @@ const SONGS = [
 { dur: "2:56", sortDur: "0256", name: "Siento Orgullo", url: "songs/siento-orgullo.mp3", performer: "DJ Circle Time ft. Pre-K Orange", notes: "An inspirational Spanish song about feeling proud.", mood: ["Inspirational"], occasion: "", category: [], section: "spanish" },
 { dur: "2:21", sortDur: "0221", name: "Cosas Grandes", url: "songs/cosas-grandes.mp3", performer: "DJ Circle Time ft. Pre-K Orange", notes: "An inspirational Spanish song about big things.", mood: ["Inspirational"], occasion: "", category: [], section: "spanish" },
 { dur: "2:07", sortDur: "0207", name: "Soy Especial", url: "songs/soy-especial.mp3", performer: "DJ Circle Time ft. Pre-K Orange", notes: "An inspirational Spanish song about being special.", mood: ["Inspirational"], occasion: "", category: [], section: "spanish" },
-{ dur: "3:06", sortDur: "0306", name: "Friendgiving", url: "songs/friendgiving.mp3", performer: "DJ Circle Time ft. Pre-K Orange", notes: "A Thanksgiving celebration song to share with friends.", mood: ["Sing-Along"], occasion: "Thanksgiving", category: [] }
+{ dur: "3:06", sortDur: "0306", name: "Friendsgiving", url: "songs/friendsgiving.mp3", performer: "DJ Circle Time ft. Pre-K Orange", notes: "A Thanksgiving celebration song to share with friends.", mood: ["Sing-Along"], occasion: "Thanksgiving", category: [] }
 ];
